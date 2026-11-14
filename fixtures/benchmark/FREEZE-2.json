@@ -1,0 +1,6 @@
+{
+  "frozen_at": "2026-11-14T18:09:08.829105+00:00",
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "manifest_sha256": "02198419e0ba8583c581fbf53f377f4ce7b33f4399407b2a960e58737e89b8f6",
+  "note": "Recorded before the detector was run on the test-2 recording. Defaults unchanged. test-2 is evaluated once; a second run is refused."
+}

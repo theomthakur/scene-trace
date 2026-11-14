@@ -1,0 +1,25 @@
+[
+ {
+  "id": "z-street",
+  "name": "Street edge strip (people)",
+  "role": "restricted",
+  "polygon": [
+   [
+    0.05,
+    0.8
+   ],
+   [
+    0.95,
+    0.8
+   ],
+   [
+    0.95,
+    0.99
+   ],
+   [
+    0.05,
+    0.99
+   ]
+  ]
+ }
+]

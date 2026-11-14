@@ -1,0 +1,25 @@
+[
+ {
+  "id": "z-road",
+  "name": "Approach road (people)",
+  "role": "restricted",
+  "polygon": [
+   [
+    0.55,
+    0.55
+   ],
+   [
+    0.9,
+    0.55
+   ],
+   [
+    0.9,
+    1.0
+   ],
+   [
+    0.55,
+    1.0
+   ]
+  ]
+ }
+]
