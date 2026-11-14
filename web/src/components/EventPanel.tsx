@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
-import { ApiError, type Backend, type EventT } from '../api'
+import { ApiError, type Backend, type EventT, type SemanticInfo } from '../api'
 import { fmt, TYPE_LABEL } from './Timeline'
 
 export const FLAG_TEXT: Record<string, string> = {
@@ -13,27 +13,56 @@ export function EventList({ events, hits, selectedId, onSelect, backend, runId, 
   const [type, setType] = useState(''); const [status, setStatus] = useState(''); const [q, setQ] = useState('')
   const [note, setNote] = useState<{ understood: string[]; ignored: string[]; notices: string[]; unsupported: boolean } | null>(null)
   const [busy, setBusy] = useState(false)
-  const shown = events.filter(e => (!hits || hits.has(e.id)) && (!type || e.type === type) && (!status || e.review_status === status))
+  const [mode, setMode] = useState<'keyword' | 'semantic'>('keyword')
+  const [sem, setSem] = useState<Map<string, SemanticInfo> | null>(null)
+  const [semNote, setSemNote] = useState<{ kind: 'info' | 'warn' | 'err'; lines: string[]; meaning?: string } | null>(null)
+  const matched = events.filter(e => (!hits || hits.has(e.id)) && (!type || e.type === type) && (!status || e.review_status === status))
+  const shown = sem ? [...matched].sort((a, b) => (sem.get(a.id)?.rank ?? 1e9) - (sem.get(b.id)?.rank ?? 1e9)) : matched
   const run = async (ev?: React.FormEvent) => {
     ev?.preventDefault()
-    if (!q.trim()) { setNote(null); onSearchResults(null); return }
+    if (!q.trim()) { setNote(null); setSem(null); setSemNote(null); onSearchResults(null); return }
     setBusy(true)
+    if (mode === 'semantic') {
+      setNote(null)
+      try {
+        const r = await backend.semanticSearch(runId, q, {})
+        setSem(new Map(r.results.map(x => [x.id, x.semantic])))
+        onSearchResults(new Set(r.results.map(x => x.id)))
+        const c = r.structured_constraints_applied
+        setSemNote({ kind: r.unsupported ? 'warn' : 'info', meaning: r.score_meaning, lines: [
+          ...r.notices,
+          ...(c.classes.length || c.event_types.length || c.zone_ids.length ? [`Structured filter applied first: ${[...c.classes, ...c.event_types, ...c.zone_ids].join(', ')}.`] : []),
+          ...(!r.unsupported ? [`${r.results.length} event${r.results.length === 1 ? '' : 's'} ranked by embedding similarity${r.candidates_after_structured_filter != null ? ` from ${r.candidates_after_structured_filter} candidates` : ''}.`] : [])] })
+      } catch (e) {
+        setSem(null); onSearchResults(null)
+        setSemNote({ kind: e instanceof ApiError && e.code === 'semantic_unavailable' ? 'warn' : 'err', lines: [(e as Error).message, 'Keyword search and everything else still work.'] })
+      } finally { setBusy(false) }
+      return
+    }
+    setSem(null); setSemNote(null)
     try {
       const r = await backend.search(runId, q, {})
       setNote({ understood: r.interpreted.understood, ignored: r.interpreted.ignored_terms, notices: r.notices, unsupported: r.unsupported })
       onSearchResults(new Set(r.results.map(x => x.id)))
     } finally { setBusy(false) }
   }
-  useEffect(() => { setQ(''); setNote(null); onSearchResults(null) }, [runId])   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setQ(''); setNote(null); setSem(null); setSemNote(null); onSearchResults(null) }, [runId])   // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <section aria-labelledby="events-h" className="panel event-panel">
       <div className="section-heading"><div><p className="eyebrow">ANALYSIS</p><h2 id="events-h">Detected events <span className="count">{shown.length}</span></h2></div></div>
       <p className="panel-description">Select an event to inspect its timeline and supporting frames.</p>
       <form className="search" onSubmit={run} role="search">
         <label className="sr" htmlFor="q">Search events</label>
-        <input id="q" value={q} onChange={e => setQ(e.target.value)} placeholder="Search events or time..." />
-        <button className="btn" disabled={busy}>Search</button>
+        <input id="q" value={q} onChange={e => setQ(e.target.value)} placeholder={mode === 'semantic' ? 'Describe what you are looking for, for example "red car"' : 'Search events or time...'} />
+        <button className="btn" disabled={busy}>{busy ? 'Searching...' : 'Search'}</button>
       </form>
+      <div className="segmented" role="radiogroup" aria-label="Search mode">
+        {(['keyword', 'semantic'] as const).map(m => <label key={m} className={mode === m ? 'on' : ''}><input type="radio" name="searchmode" checked={mode === m} onChange={() => { setMode(m); setSem(null); setSemNote(null); setNote(null); onSearchResults(null) }} />{m === 'keyword' ? 'Keyword' : 'Semantic'}</label>)}
+      </div>
+      {semNote && <div className={`notice ${semNote.kind}`} role="status">
+        {semNote.lines.map(l => <p key={l}>{l}</p>)}
+        {semNote.meaning && <p className="muted"><strong>About the score:</strong> {semNote.meaning}</p>}
+      </div>}
       {note && <div className={`notice ${note.unsupported ? 'warn' : 'info'}`} role="status">
         {note.understood.length > 0 && <p><strong>Understood:</strong> {note.understood.join('; ')}</p>}
         {note.ignored.length > 0 && <p><strong>Ignored words:</strong> {note.ignored.join(', ')}</p>}
@@ -50,6 +79,8 @@ export function EventList({ events, hits, selectedId, onSelect, backend, runId, 
           <li key={e.id}><button className={`ev${selectedId === e.id ? ' sel' : ''}`} aria-current={selectedId === e.id ? 'true' : undefined} onClick={() => onSelect(e)}>
             <span className="ev-title">{TYPE_LABEL[e.type]}: {e.class_name} #{e.track_ids.join(', #')}</span>
             <span className="ev-time">{fmt(e.start_ms)} to {fmt(e.end_ms)}</span>
+            {sem?.get(e.id) && <span className="pill sem" title="Cosine similarity between the query and this event's best evidence image. A ranking aid, not a confidence.">#{sem.get(e.id)!.rank} similarity {sem.get(e.id)!.similarity.toFixed(2)}</span>}
+            {sem?.get(e.id) && <span className="muted ev-sem">best match: {sem.get(e.id)!.best_item.kind === 'crop' ? 'crop of the tracked object' : 'full frame'}, {sem.get(e.id)!.best_item.role} frame at {fmt(sem.get(e.id)!.best_item.t_ms)}</span>}
             <span className={`pill st-${e.review_status}`}>{REVIEW_LABEL[e.review_status]}</span>
             {e.uncertainty_flags.length > 0 && <span className="pill flag">{e.uncertainty_flags.length} flag{e.uncertainty_flags.length > 1 ? 's' : ''}</span>}
             {e.source === 'fixture' && <span className="pill flag">fixture</span>}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "corpus": "21 events from the two benchmark clips processed with the default configuration and fixtures/zones/*.json (pedestrian_area: 7 person zone-entry events; rush_hour: 14 car events). Event ids are deterministic.",
+  "annotation": {
+    "method": "Relevance judged from the saved mid-frame crop of each event's tracked box, viewed on a contact sheet BEFORE any model ranked the events. One reviewer. Events whose crops did not settle a query are listed as 'ambiguous' and are ignored for that query (neither relevant nor wrong).",
+    "reviewers": 1,
+    "caveat": "The reviewer wrote the queries after seeing the crops, so queries are ones the corpus can answer. Eleven queries and 21 events: descriptive only."
+  },
+  "queries": [
+    {"q": "person carrying a shopping bag", "relevant": ["97dc222a48ce", "4b7cfe54a9d2", "2fda9f732b35"], "ambiguous": ["43b443b5cd7b"]},
+    {"q": "person dressed in black", "relevant": ["f81dbdf978a4", "43b443b5cd7b"], "ambiguous": ["2fda9f732b35"]},
+    {"q": "man wearing sunglasses", "relevant": ["43b443b5cd7b"], "ambiguous": ["57f428aaf5b7"]},
+    {"q": "person with a backpack", "relevant": ["e82bdaf608c1"], "ambiguous": ["57f428aaf5b7"]},
+    {"q": "person in a blue shirt", "relevant": ["97dc222a48ce", "57f428aaf5b7"], "ambiguous": ["e82bdaf608c1", "2fda9f732b35"]},
+    {"q": "red car", "relevant": ["87d08fd80c84"], "ambiguous": ["c7ee7e6abb75", "3f724575ce4e"]},
+    {"q": "car with red brake lights", "relevant": ["a46d3ff6103f", "68cfc5afccd3", "4808d1a83773", "87d08fd80c84"], "ambiguous": []},
+    {"q": "silver van", "relevant": ["5b536c23ff80", "3f724575ce4e", "c7ee7e6abb75"], "ambiguous": ["f4a84c625c8e", "20d0fd1c22b0"]},
+    {"q": "person leaning out of a car window", "relevant": ["e885435d9e3b"], "ambiguous": []},
+    {"q": "dark green minivan", "relevant": ["593c2d614ead"], "ambiguous": ["ff8c5c7df67a", "d916a30b7948"]},
+    {"q": "car with a visible licence plate", "relevant": ["87d08fd80c84"], "ambiguous": ["68cfc5afccd3", "4808d1a83773"]}
+  ]
+}

@@ -46,3 +46,16 @@ def test_run_is_deterministic_on_the_same_machine(result, tmp_path):
 def test_published_attempt_is_internally_consistent_and_the_original_is_untouched(result):
     assert verify_attempt(result["attempt_dir"]) == []
     assert hashlib.sha1(CLIP.read_bytes()).hexdigest() == "51e89a672896e45cca17aa46cd223630a6266e26"
+
+
+# ---------------- semantic embeddings (real model) ----------------
+def test_real_clip_embeddings_are_normalised_and_separate_obvious_colours():
+    import numpy as np
+    from PIL import Image
+    from video_investigator.search import semantic
+    e = semantic.ClipEmbedder()
+    img = e.embed_images([Image.new("RGB", (224, 224), (220, 20, 20)), Image.new("RGB", (224, 224), (20, 20, 220))])
+    txt = e.embed_texts(["a red square", "a blue square"])
+    assert img.shape == (2, 512) and txt.shape == (2, 512) and np.allclose(np.linalg.norm(img, axis=1), 1, atol=1e-4)
+    sims = txt @ img.T
+    assert sims[0, 0] > sims[0, 1] and sims[1, 1] > sims[1, 0]          # each colour word is closer to its own colour

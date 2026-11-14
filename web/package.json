@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173",
     "build": "tsc --noEmit && vite build",
+    "build:demo": "tsc --noEmit && VITE_DEFAULT_MODE=demo vite build",
     "preview": "vite preview --host 127.0.0.1 --port 5173",
     "test": "vitest run"
   },

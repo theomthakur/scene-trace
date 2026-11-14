@@ -32,3 +32,10 @@ class ReviewPut(BaseModel):
     verdict: Literal["confirmed", "dismissed", "uncertain"]
     note: str = Field(default="", max_length=2000)
     expected_version: int = Field(ge=0)
+
+
+class SemanticSearchBody(BaseModel):
+    query: str = Field(min_length=1, max_length=300)
+    filters: dict = Field(default_factory=dict)
+    limit: int | None = Field(default=None, ge=1)
+    min_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)

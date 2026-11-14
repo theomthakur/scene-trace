@@ -1,0 +1,24 @@
+# Live hosting on one machine: API (also serves the built UI) and one worker sharing a data volume.
+#   export VI_API_TOKEN="$(openssl rand -hex 24)"; docker compose up --build
+# The API is bound to 127.0.0.1 only. Put an authenticating reverse proxy (or a private network) in front before exposing it.
+services:
+  api:
+    build: .
+    image: scenetrace:local
+    command: ["uvicorn", "video_investigator.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      VI_API_TOKEN: ${VI_API_TOKEN:?set VI_API_TOKEN to a long random value}
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["scenetrace-data:/data"]
+    restart: unless-stopped
+  worker:
+    image: scenetrace:local
+    command: ["python", "-m", "video_investigator.worker.main"]
+    depends_on: [api]
+    volumes: ["scenetrace-data:/data"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { memory: 4g }
+volumes:
+  scenetrace-data:

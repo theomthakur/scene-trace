@@ -26,6 +26,7 @@ export const demoBackend: Backend = {
     const hits = d.events.filter((e: EventT) => !q || e.description.toLowerCase().includes(q) || e.type.includes(q.replace(/\s+/g, '_')) || e.class_name.includes(q))
     return { results: hits, interpreted: { event_types: [], classes: [], zone_ids: [], review_status: [], understood: ['plain text match on descriptions (static demo)'], ignored_terms: [], after_ms: null, before_ms: null }, unsupported: false, notices: ['Static demo: simple text match over precomputed event descriptions.'], limit: 50 }
   },
+  semanticSearch: async () => { throw new ApiError(0, 'demo_read_only', 'Semantic search needs the live backend and its embedding model. The static demo supports keyword search only.') },
   review: async () => readOnly(),
   evidenceUrl: (ev, name) => `/demo/evidence/${ev.event_key}/${name}`,
   reportUrl: (_r, format) => `/demo/report.${format === 'markdown' ? 'md' : format}`,

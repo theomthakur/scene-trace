@@ -1,12 +1,13 @@
 """FastAPI application. Loopback by default, explicit CORS allowlist, no filesystem paths in responses."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, uuid
+import hashlib, hmac, json, os, re, shutil, uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import BackgroundTasks, FastAPI, File, Form, Header, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
 from ..config import Settings, load_settings
@@ -17,6 +18,7 @@ from ..media.probe import MediaError, probe, sha256_file, validate_limits
 from ..paths import data_dir, evaluations_dir, runs_dir, uploads_tmp, videos_dir
 from ..reports import export
 from ..search import engine as search_engine
+from ..search import semantic
 from ..worker import store
 from . import schemas
 from .errors import ApiError, install
@@ -84,6 +86,37 @@ def create_app() -> FastAPI:
     app.add_middleware(BodyLimit, max_bytes=settings.limits.upload_max_bytes + 1_048_576)   # + multipart overhead
     install(app)
     F = lambda: app.state.factory
+
+    # ---------- optional access token (for hosting beyond loopback) ----------
+    api_token = os.environ.get("VI_API_TOKEN") or None
+    session_cookie = hmac.new(api_token.encode(), b"scenetrace-session-v1", "sha256").hexdigest() if api_token else None
+
+    def authed(request: Request) -> bool:
+        if not api_token:
+            return True
+        bearer = request.headers.get("authorization", "")
+        if bearer.lower().startswith("bearer ") and hmac.compare_digest(bearer[7:].strip(), api_token):
+            return True
+        return hmac.compare_digest(request.cookies.get("vi_session", ""), session_cookie or "x")
+
+    @app.middleware("http")
+    async def require_token(request: Request, call_next):
+        p = request.url.path
+        if api_token and p.startswith("/api/") and p not in ("/api/health", "/api/session") and request.method != "OPTIONS" and not authed(request):
+            return JSONResponse({"error": {"code": "auth_required", "message": "An access token is required."}}, status_code=401)
+        return await call_next(request)
+
+    @app.get("/api/session")
+    def session_state(request: Request):
+        return {"required": bool(api_token), "authenticated": authed(request)}
+
+    @app.post("/api/session")
+    def session_login(body: dict, request: Request):
+        if not api_token or not hmac.compare_digest(str(body.get("token", "")), api_token):
+            raise ApiError(401, "auth_failed", "That access token was not accepted.")
+        resp = JSONResponse({"required": True, "authenticated": True})
+        resp.set_cookie("vi_session", session_cookie, httponly=True, samesite="lax", secure=request.url.scheme == "https", max_age=8 * 3600)
+        return resp
 
     # ---------- serializers (never expose paths) ----------
     def video_out(v: m.Video) -> dict:
@@ -378,6 +411,89 @@ def create_app() -> FastAPI:
             return {"results": res, "interpreted": interpreted, "unsupported": False, "notices": [], "total_matching_returned": len(res), "limit": lim,
                     "ordering": "start time (no relevance probability is computed)"}
 
+    # ---------- semantic search (optional; the core app never depends on it) ----------
+    def get_embedder():
+        if os.environ.get("VI_SEMANTIC", "on").lower() == "off":
+            raise ApiError(503, "semantic_unavailable", "Semantic search is switched off on this server (VI_SEMANTIC=off). Structured search still works.")
+        emb = getattr(app.state, "embedder", None)
+        if emb is not None:
+            return emb
+        try:
+            app.state.embedder = semantic.default_embedder()
+            return app.state.embedder
+        except semantic.EmbedderUnavailable as e:
+            raise ApiError(503, "semantic_unavailable", f"{e.message} Structured search still works.")
+
+    def run_attempt_dir(r: m.Run) -> Path:
+        return (data_dir() / r.manifest_rel).parent
+
+    def completed_run(s, run_id: str) -> m.Run:
+        r = current_run(s, run_id)
+        if r.state != "completed" or not r.manifest_rel:
+            raise ApiError(409, "invalid_state", "Semantic search needs a completed run.", state=r.state)
+        return r
+
+    def ensure_index(s, r: m.Run, embedder):
+        got = semantic.load_index(run_attempt_dir(r), r.manifest_sha256)
+        if got is not None and got[0]["model"]["name"] == embedder.name and got[0]["model"]["revision"] == embedder.revision and got[0]["model"]["source"] == embedder.source:
+            return got
+        attempt = run_attempt_dir(r)
+        evs = json.loads((attempt / "events.json").read_text())
+        obs = [json.loads(x) for x in (attempt / "observations.jsonl").read_text().splitlines()]
+        semantic.build_index(attempt, evs, obs, embedder, run_id=r.id, manifest_sha256=r.manifest_sha256)
+        return semantic.load_index(attempt, r.manifest_sha256)
+
+    @app.get("/api/runs/{run_id}/semantic")
+    def semantic_status(run_id: str):
+        with session_scope(F()) as s:
+            r = current_run(s, run_id)
+            idx = semantic.load_index(run_attempt_dir(r), r.manifest_sha256) if r.state == "completed" and r.manifest_rel else None
+            emb = getattr(app.state, "embedder", None)
+            off = os.environ.get("VI_SEMANTIC", "on").lower() == "off"
+            return {"run_id": run_id, "enabled": not off, "model_loaded": emb is not None, "indexed": idx is not None,
+                    "index": None if idx is None else {"items": len(idx[0]["items"]), "built_at": idx[0]["built_at"], "model": idx[0]["model"], "embeddings_sha256": idx[0]["embeddings_sha256"]},
+                    "score_meaning": semantic.SCORE_MEANING}
+
+    @app.post("/api/runs/{run_id}/semantic/index")
+    def semantic_build(run_id: str):
+        with session_scope(F()) as s:
+            r = completed_run(s, run_id)
+            meta, emb = ensure_index(s, r, get_embedder())
+            return {"run_id": run_id, "indexed": True, "items": len(meta["items"]), "model": meta["model"], "built_at": meta["built_at"]}
+
+    @app.post("/api/runs/{run_id}/search/semantic")
+    def semantic_search(run_id: str, body: schemas.SemanticSearchBody):
+        with session_scope(F()) as s:
+            r = completed_run(s, run_id)
+            lim = min(body.limit or settings.search.default_limit, settings.search.max_limit)
+            c = search_engine.parse_query(body.query, r.zones)
+            f = body.filters or {}
+            if f.get("type"): c.types = {f["type"]}            # explicit filters are authoritative: they replace what the text implied
+            if f.get("class_name"): c.classes = {f["class_name"]}
+            if f.get("zone_id"): c.zone_ids = {f["zone_id"]}
+            if f.get("review_status"): c.review_status = {f["review_status"]}
+            if f.get("after_ms") is not None: c.after_ms = int(f["after_ms"])
+            if f.get("before_ms") is not None: c.before_ms = int(f["before_ms"])
+            base = {"score_meaning": semantic.SCORE_MEANING, "ordering": "semantic similarity, highest first (a ranking aid, not a confidence)", "limit": lim,
+                    "structured_constraints_applied": {"event_types": sorted(c.types), "classes": sorted(c.classes), "zone_ids": sorted(c.zone_ids), "review_status": sorted(c.review_status),
+                                                       "after_ms": c.after_ms, "before_ms": c.before_ms}}
+            if c.notices:                       # same refusal policy as structured search: intent, identity and blame are not inferred from pixels
+                return {**base, "results": [], "unsupported": True, "notices": c.notices + ["No events were ranked for this query."]}
+            embedder = get_embedder()
+            meta, emb = ensure_index(s, r, embedder)
+            all_events = _events(s, r)
+            pool = search_engine.apply(all_events, c, 10_000) if not c.is_empty() else all_events
+            keys = {e["event_key"] for e in pool}
+            qv = embedder.embed_texts([body.query])[0]
+            ranked = semantic.rank_events(meta, emb, qv, keys, lim, body.min_similarity)
+            by_key = {e["event_key"]: e for e in pool}
+            results = []
+            for h in ranked:
+                e = by_key[h["event_key"]]; b = h["best"]
+                results.append({**e, "semantic": {"similarity": h["similarity"], "rank": h["rank"], "best_item": {**b, "frame_url": f"{e['evidence_base']}{b['role']}_original.jpg"},
+                                                  "model": meta["model"]["name"], "index_built_at": meta["built_at"]}})
+            return {**base, "results": results, "unsupported": False, "notices": [], "candidates_after_structured_filter": len(pool), "model": meta["model"], "source": embedder.source}
+
     # ---------- review ----------
     @app.put("/api/events/{event_id}/review")
     def review(event_id: str, body: schemas.ReviewPut):
@@ -435,6 +551,10 @@ def create_app() -> FastAPI:
         if not p.is_file():
             raise ApiError(404, "evaluation_not_found", "No such evaluation.")
         return json.loads(p.read_text())
+
+    web_dist = os.environ.get("VI_WEB_DIST")
+    if web_dist and Path(web_dist).is_dir():                       # single-origin hosting: the API also serves the built UI
+        app.mount("/", StaticFiles(directory=web_dist, html=True), name="web")
 
     return app
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ApiError, type Backend, type EventT, type RunT, type VideoT, type ZoneT } from '../api'
+import { ApiError, mediaSrc, type Backend, type EventT, type RunT, type VideoT, type ZoneT } from '../api'
 import Player, { type PlayerApi } from '../components/Player'
 import Timeline, { fmt } from '../components/Timeline'
 import { EventList, EvidenceDrawer } from '../components/EventPanel'
@@ -103,7 +103,7 @@ export default function Review({ backend }: { backend: Backend }) {
         <div className="col-main">
           <section className="panel player-panel" aria-labelledby="player-h">
             <div className="section-heading"><div><p className="eyebrow">FOOTAGE</p><h2 id="player-h">{video.display_name}</h2></div><span className="footage-meta">{fmt(video.duration_ms)} · {video.width} × {video.height}</span></div>
-            <Player video={video} src={video.media_url} idx={idx} zones={zones} showOverlay={overlay} toleranceMs={tolerance} draftPoints={draft} onDraftPoint={p => setDraft(d => [...(d ?? []), p])} onClosePolygon={finishPolygon}
+            <Player video={video} src={mediaSrc(video.media_url)} idx={idx} zones={zones} showOverlay={overlay} toleranceMs={tolerance} draftPoints={draft} onDraftPoint={p => setDraft(d => [...(d ?? []), p])} onClosePolygon={finishPolygon}
               highlightTracks={selected?.track_ids ?? []} onTime={setT} apiRef={player} />
             <div className="row">
               <label className="check"><input type="checkbox" checked={overlay} onChange={e => setOverlay(e.target.checked)} /> Show detection overlay</label>

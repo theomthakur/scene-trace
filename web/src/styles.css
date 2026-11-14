@@ -176,3 +176,13 @@ select { padding-right:38px }
 .metric-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:23px; background:#f6f8f6; border-radius:10px; padding:20px 0 }.metric-grid>div { padding:0 20px; border-right:1px solid #e1e8e3 }.metric-grid>div:last-child { border:0 }.metric-grid span,.metric-grid strong,.metric-grid small { display:block }.metric-grid span { color:#859691; font-size:9px; font-weight:700; letter-spacing:.09em }.metric-grid strong { font-size:27px; line-height:1.2; margin:8px 0; letter-spacing:-.04em }.metric-grid small { color:#788b85; font-size:11px }.eval-details { border:0; border-top:1px solid #edf0ee; border-radius:0; margin-top:20px }.eval-details>summary { padding:15px 0 0; font-size:13px }.eval-details>div { border:0; padding:5px 0 0 }
 @media(max-width:900px) { .pipeline-grid,.metric-grid { grid-template-columns:repeat(2,1fr) }.metric-grid>div:nth-child(2) { border:0 }.metric-grid>div:nth-child(n+3) { margin-top:22px }.architecture-map { display:grid; grid-template-columns:1fr 1fr }.architecture-map>b { display:none }.design-cards { grid-template-columns:1fr }.story-hero { grid-template-columns:1fr; gap:30px }.hero-index { border-left:0; border-top:1px solid #d9e1de; padding:18px 0 0 } }
 @media(max-width:600px) { .story-hero { padding:18px 0 32px }.pipeline-grid,.architecture-map { grid-template-columns:1fr }.pipeline-card h3 { margin-top:18px }.pipeline-card p { min-height:0 }.section-title { align-items:start; flex-direction:column }.eval-card { padding:18px }.metric-grid>div { padding:0 12px }.metric-grid strong { font-size:22px }.eval-badge { display:none } }
+
+.login { max-width: 420px; display: grid; gap: 10px }
+
+.segmented { display: inline-flex; border: 1px solid #7b88a3; border-radius: 8px; overflow: hidden; margin: 2px 0 6px }
+.segmented label { flex-direction: row; padding: 6px 14px; cursor: pointer; color: var(--ink); font-size: 13px; min-height: 36px; align-items: center }
+.segmented label.on { background: var(--ink); color: #fff }
+.segmented input { position: absolute; opacity: 0; width: 1px; height: 1px }
+.segmented label:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: -3px }
+.pill.sem { background: var(--info-bg); color: var(--accent) }
+.ev-sem { flex-basis: 100%; font-size: 12px }
