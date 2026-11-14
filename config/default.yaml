@@ -1,0 +1,41 @@
+# Versioned runtime settings. Every value is a provisional default, not a measured optimum.
+# Rationale and tuning evidence live in docs/PARAMETER-LEDGER.md.
+config_version: "1"
+limits:
+  upload_max_bytes: 262144000      # 250 MiB
+  upload_max_seconds: 300
+processing:
+  max_long_edge_px: 960
+  sample_fps: 5.0
+detector:
+  name: fasterrcnn_mobilenet_v3_large_320_fpn
+  weights: COCO_V1
+  score_threshold: 0.50
+  device: cpu                      # cpu is the required fallback; mps/cuda are opt-in
+  classes: [person, bicycle, car, motorcycle, bus, truck, backpack, handbag, suitcase]
+tracker:
+  iou_gate: 0.20
+  max_missing_s: 1.0
+  min_hits_to_confirm: 2
+  velocity_smoothing: 0.5
+events:
+  evidence_padding_s: 3.0
+  max_gap_s: 0.4                   # joint with sample_fps: must be >= 1/sample_fps
+  exit_hysteresis_s: 0.4
+  zone_entry:
+    dwell_s: 1.0
+    classes: [person]
+  stationary:
+    duration_s: 5.0
+    displacement_diag: 0.02
+    classes: [bicycle, car, motorcycle, bus, truck, backpack, handbag, suitcase]
+  passage:
+    min_overlap: 0.30
+    persistence_s: 2.0
+    classes: [bicycle, car, motorcycle, bus, truck, backpack, handbag, suitcase]
+search:
+  default_limit: 10
+  max_limit: 50
+quality:
+  sparse_detections_per_frame: 0.05
+  long_gap_factor: 3.0

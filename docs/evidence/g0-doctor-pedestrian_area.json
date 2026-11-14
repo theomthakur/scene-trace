@@ -1,0 +1,82 @@
+{
+  "python": "3.11.15",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "torch": "2.15.0",
+  "torchvision": "0.29.2",
+  "pyav": "18.1.0",
+  "opencv": "5.0.0",
+  "scipy": "1.17.1",
+  "numpy": "2.4.6",
+  "mps_available": true,
+  "cuda_available": false,
+  "ffmpeg": "/opt/homebrew/bin/ffmpeg",
+  "ffprobe": "/opt/homebrew/bin/ffprobe",
+  "h264_encoder": true,
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "detector": {
+    "name": "fasterrcnn_mobilenet_v3_large_320_fpn",
+    "weights": "COCO_V1",
+    "weights_url": "https://download.pytorch.org/models/fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth",
+    "weights_sha256": "907ea3f91ff92242bc1baea8049276a3e76bca48ce7560bd268cc029f37977b5",
+    "weights_file": "fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth",
+    "torch": "2.15.0",
+    "torchvision": "0.29.2",
+    "device": "cpu",
+    "score_threshold": 0.5,
+    "supported_classes": [
+      "person",
+      "bicycle",
+      "car",
+      "motorcycle",
+      "bus",
+      "truck",
+      "backpack",
+      "handbag",
+      "suitcase"
+    ],
+    "num_coco_categories": 91,
+    "box_format": "normalized xyxy"
+  },
+  "detector_load_s": 0.09,
+  "smoke": {
+    "clip": "var/candidates/pedestrian_area.webm",
+    "frame_t_ms": 0,
+    "frame_shape": [
+      540,
+      960,
+      3
+    ],
+    "detections": [
+      {
+        "class": "person",
+        "score": 0.995
+      },
+      {
+        "class": "person",
+        "score": 0.984
+      },
+      {
+        "class": "person",
+        "score": 0.937
+      },
+      {
+        "class": "person",
+        "score": 0.913
+      },
+      {
+        "class": "person",
+        "score": 0.907
+      },
+      {
+        "class": "person",
+        "score": 0.851
+      },
+      {
+        "class": "person",
+        "score": 0.724
+      }
+    ],
+    "detect_s": 0.067
+  }
+}

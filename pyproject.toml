@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video_investigator"
+version = "0.1.0"
+description = "Local video investigation platform: real object detection, tracking, temporal event rules and a review workflow."
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "torch", "torchvision", "av", "opencv-python-headless", "scipy", "numpy", "pillow",
+  "fastapi", "uvicorn", "sqlalchemy", "pydantic", "pyyaml", "python-multipart", "httpx",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["real_inference: runs the pretrained detector on real footage (needs weights and clips under var/)"]
+addopts = "-m 'not real_inference'"
