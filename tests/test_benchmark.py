@@ -100,3 +100,55 @@ def test_second_test_set_refuses_a_second_run_and_a_changed_setup(tmp_path, monk
     with pytest.raises(SystemExit) as e:
         benchmark.run_expansion(include_test2=True)
     assert "already evaluated" in str(e.value)
+
+
+# ---------------- third batch: negatives and audited units ----------------
+def _audit_unit(ids):
+    return [{"unit": "u", "clip": "c", "pred": [{"event_id": i, "start_ms": 0, "end_ms": 1000, "track_ids": [1], "uncertainty_flags": []} for i in ids]}]
+
+
+def test_audit_summary_never_assumes_unlabelled_events_are_correct(tmp_path, monkeypatch):
+    labels = tmp_path / "l.json"; monkeypatch.setattr(benchmark, "AUDIT_LABELS", labels)
+    labels.write_text(json.dumps({"events": {"a": {"label": "supported"}, "b": {"label": "supported"}, "c": {"label": "unsupported"}, "d": {"label": "ambiguous"}}}))
+    s = benchmark.audit_summary(_audit_unit(["a", "b", "c", "d", "e"]))
+    assert (s["supported"], s["unsupported"], s["ambiguous"], s["unlabelled"], s["predicted_events"]) == (2, 1, 1, 1, 5)
+    assert s["audited_precision"]["value"] == pytest.approx(2 / 3) and s["audited_precision"]["denominator"] == 3        # ambiguous and unlabelled are excluded, not counted as correct
+    assert "not measured" in s["recall"]
+
+
+def test_audit_precision_is_undefined_when_nothing_is_decided(tmp_path, monkeypatch):
+    monkeypatch.setattr(benchmark, "AUDIT_LABELS", tmp_path / "missing.json")
+    s = benchmark.audit_summary(_audit_unit(["a", "b"]))
+    assert s["unlabelled"] == 2 and s["audited_precision"]["value"] is None and "no decided" in s["audited_precision"]["undefined_reason"]
+    assert benchmark.audit_summary([]) is None
+
+
+def test_third_batch_freeze_matches_and_the_third_test_set_refuses_a_second_run(tmp_path, monkeypatch):
+    import hashlib
+    from video_investigator.config import load_settings
+    fr = json.loads((REPO / "fixtures" / "benchmark" / "FREEZE-3.json").read_text())
+    assert fr["config_hash"] == load_settings().config_hash() == json.loads((REPO / "fixtures" / "benchmark" / "FREEZE.json").read_text())["config_hash"]   # same setup as the first frozen test
+    assert fr["manifest_sha256"] == hashlib.sha256((REPO / "fixtures" / "benchmark" / "manifest_reliability.json").read_bytes()).hexdigest()
+    done = tmp_path / "t3.json"; done.write_text("{}"); monkeypatch.setattr(benchmark, "TEST3_RESULT", done)
+    with pytest.raises(SystemExit) as e:
+        benchmark.run_reliability(include_test3=True)
+    assert "already evaluated" in str(e.value)
+
+
+def test_scenes_are_disjoint_across_all_three_manifests_and_licences_are_open():
+    scenes = {}
+    for name in ("manifest.json", "manifest_expansion.json", "manifest_reliability.json"):
+        for s in json.loads((REPO / "fixtures" / "benchmark" / name).read_text())["sources"]:
+            assert s["scene_id"] not in scenes, f"{s['scene_id']} appears in {scenes.get(s['scene_id'])} and {name}"
+            scenes[s["scene_id"]] = name
+            assert len(s["sha1"]) == 40 and any(k in s["license"] for k in ("CC0", "CC BY", "Public domain"))
+    assert len(scenes) == 8                                                                   # 2 original + 3 expansion + 3 third batch
+
+
+def test_saved_audit_report_and_labels_agree_and_cover_every_event():
+    rep = json.loads((REPO / "docs" / "evidence" / "benchmark-reliability.json").read_text())
+    events = rep["lanes"]["test_3"]["audit"]["events"]; labels = json.loads((REPO / "fixtures" / "benchmark" / "audit_labels.json").read_text())["events"]
+    assert {e["event_id"] for e in events} == set(labels), "every audited event needs a label and no label may be orphaned"
+    assert all(v["label"] in ("supported", "unsupported", "ambiguous") and v["note"] for v in labels.values())
+    a = rep["lanes"]["test_3"]["audit"]
+    assert a["supported"] + a["unsupported"] + a["ambiguous"] == a["predicted_events"] == len(events) and a["unlabelled"] == 0

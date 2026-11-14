@@ -42,6 +42,7 @@ Open http://127.0.0.1:8000 and enter the token when asked. The compose file bind
 | `VI_CORS_ORIGINS` | backend | Comma-separated allowed origins (default: the local Vite dev origins). |
 | `VI_UPLOAD_MAX_BYTES` | backend | Overrides the 250 MiB default upload limit. |
 | `VI_LEASE_SECONDS` | worker | Job lease; a worker silent for this long is treated as lost (default 30). |
+| `VI_EXPERIMENTAL_CROSSCAM` | backend | Default `off`: the cross-camera endpoint returns 404. Set `on` only to experiment; it is unvalidated. |
 | `VI_SEMANTIC`, `VI_EXPLAIN` | backend | `off` disables semantic search or descriptions (they return 503 and the rest of the app is unaffected). |
 | `VI_DETECTOR_CHECKPOINT` | worker | Opt-in fine-tuned detector weights. Recorded in every run; not part of the config hash. |
 | `TORCH_HOME`, `HF_HOME` | backend, worker | Where model weights are cached (`/data/torch`, `/data/hf` in the image, so they survive restarts). |

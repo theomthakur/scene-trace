@@ -108,6 +108,12 @@ def cmd_evaluate_reliability(args) -> int:
     return 0
 
 
+def cmd_audit_refresh(args) -> int:
+    from .evaluation import benchmark as b
+    rep = b.refresh_audit(); a = rep["lanes"]["test_3"]["audit"]
+    print(json.dumps({k: a[k] for k in ("predicted_events", "supported", "unsupported", "ambiguous", "unlabelled", "audited_precision")}, indent=2)); return 0
+
+
 def cmd_export_demo(args) -> int:
     """Copy one completed run (observations, events, evidence, playable video) into web/public/demo for the static demo mode."""
     import shutil
@@ -169,6 +175,7 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--include-test2", action="store_true"); ex.set_defaults(fn=cmd_evaluate_expansion)
     rl = sub.add_parser("evaluate-reliability", help="third batch: negatives and audited units; test-3 once, with --include-test3")
     rl.add_argument("--include-test3", action="store_true"); rl.set_defaults(fn=cmd_evaluate_reliability)
+    sub.add_parser("audit-refresh", help="recompute the audit summary from fixtures/benchmark/audit_labels.json without running the detector").set_defaults(fn=cmd_audit_refresh)
     x = sub.add_parser("export-demo", help="export a completed run for the static demo mode")
     x.add_argument("--run-id"); x.add_argument("--out", default="web/public/demo"); x.add_argument("--skip-clips", action="store_true", help="leave out the per-event video clips (smaller bundle)")
     x.set_defaults(fn=cmd_export_demo)

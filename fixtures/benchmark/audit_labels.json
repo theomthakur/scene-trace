@@ -1,0 +1,101 @@
+{
+ "_comment": "Reviewer labels for events raised on the entrance clip (test-3, unit t3-walkway-audit). 'supported' = a real person is visibly inside the zone in the start, middle and end evidence frames. 'ambiguous' = low confidence or heavy overlap, a possible identity switch, or a frame at the image edge. 'unsupported' = not a person or not in the zone. Labels were written after the predictions existed and cannot change them. One reviewer.",
+ "events": {
+  "d3a0c6878b04": {
+   "label": "ambiguous",
+   "note": "track 1, 0.6 to 5.6 s: a person is at the left edge in the dark first frame and a pink-coat woman there at the end; the identity may have switched"
+  },
+  "ce04f475517f": {
+   "label": "supported",
+   "note": "a shopper left of the entrance in all three frames"
+  },
+  "195d34d204ed": {
+   "label": "ambiguous",
+   "note": "track 3, 0.6 to 29.8 s: the dark-jacket cart collector, clearly in the zone in the middle frame; the 29 s identity continuity is unverified and the last frame is at the right image edge"
+  },
+  "f9db158cc8a7": {
+   "label": "ambiguous",
+   "note": "track 4: small person at confidence 0.57, overlapped by others"
+  },
+  "c7ea77b83134": {
+   "label": "supported",
+   "note": "shopper with a cart near the gate, confidence 0.89 to 0.93"
+  },
+  "46edee3664c2": {
+   "label": "supported",
+   "note": "white-jacket shopper at the gate, confidence about 0.6; flagged track_lost_while_active"
+  },
+  "13a83d5f1810": {
+   "label": "supported",
+   "note": "small shopper inside the entrance, 0.75 to 0.83"
+  },
+  "cc0bb7318bf8": {
+   "label": "supported",
+   "note": "shopper inside the entrance, 0.62 to 0.80; flagged track_lost_while_active"
+  },
+  "b364f05930ae": {
+   "label": "ambiguous",
+   "note": "track 17: low confidence (0.52 to 0.59), overlapped by others"
+  },
+  "0dbda922a71d": {
+   "label": "supported",
+   "note": "pink-coat woman at the left edge of the entrance, visible in all three frames"
+  },
+  "e585230014df": {
+   "label": "supported",
+   "note": "pink-coat woman near the gate, 0.58 to 0.74; flagged track_lost_while_active"
+  },
+  "2bddd5c6210d": {
+   "label": "supported",
+   "note": "dark-jacket shopper at the left, 0.58 to 0.69"
+  },
+  "e808c28701d7": {
+   "label": "supported",
+   "note": "white-jacket shopper standing by the gate, about 0.55 to 0.6"
+  },
+  "677c231be69c": {
+   "label": "supported",
+   "note": "shopper at the left of the entrance, 0.61 to 0.73"
+  },
+  "766cb14567ad": {
+   "label": "supported",
+   "note": "pink-coat woman in the entrance, 0.53 to 0.71"
+  },
+  "5e7cd34e1e42": {
+   "label": "supported",
+   "note": "small shopper by the gate, 0.52 to 0.68; flagged track_lost_while_active"
+  },
+  "3d6950e9d371": {
+   "label": "supported",
+   "note": "shopper at the left gate, confidence 0.88"
+  },
+  "9ef0ca37e492": {
+   "label": "supported",
+   "note": "small shopper at the gate, 0.55 to 0.68"
+  },
+  "60556cf24754": {
+   "label": "supported",
+   "note": "man in a dark jacket walking in front of the gate, clear in all three frames"
+  },
+  "e012d4638ded": {
+   "label": "ambiguous",
+   "note": "track 54, 39.2 to 51.6 s: the cart collector; the first frame shows a person at the right image edge, and 12 s of continuity is unverified"
+  },
+  "73716aca9d58": {
+   "label": "supported",
+   "note": "man in a red jacket at the left, 0.86 to 1.0"
+  },
+  "ee8f37dfcf65": {
+   "label": "supported",
+   "note": "the cart collector for 10 s; the final frame is almost black (video fade-out) but the person is still visible; flagged still_active_at_video_end"
+  },
+  "e484c62ae8df": {
+   "label": "supported",
+   "note": "man at the left edge then at the gate, 0.56 to 0.98"
+  },
+  "40be28cef781": {
+   "label": "supported",
+   "note": "shopper at the gate, 0.56 to 0.90; flagged track_lost_while_active"
+  }
+ }
+}

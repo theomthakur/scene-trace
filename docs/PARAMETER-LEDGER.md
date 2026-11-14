@@ -8,7 +8,7 @@ Every value is a **provisional engineering default**, not a measured optimum. "E
 | processing long edge | 960 | px | bound memory and time | Not measured against small-object loss. The detector resizes internally to 320 to 640 px anyway. |
 | sample rate | 5 | frames/s | initial fixed-camera default | Development sweep on one clip (see below). 2 fps found 0 of 2 events; 5 fps found 1; 10 fps found 2 but took 17.4 s against 6.4 s. One clip, two events: no optimum can be claimed. |
 | detector threshold | 0.50 | score | precision-oriented start | Sweep: 0.30 gave 179 tracks, 0.50 gave 117, 0.70 gave 76 and found both events with no false positive. **Not adopted** because two events cannot justify tuning. |
-| tracker IoU gate | 0.20 | IoU | permissive start | Not swept. In the crowded pedestrian clip the tracker made about 117 tracks for roughly 9 people per frame: identities fragment. |
+| tracker IoU gate | 0.20 | IoU | permissive start | Not swept. In the crowded pedestrian clip the tracker made about 117 tracks for roughly 9 people per frame; no ground-truth tracks exist, so how many of these are identity splits is not measured. |
 | missing-track lifetime | 1.0 | s | short occlusion tolerance | A track missing longer ends before matching and is never revived (a unit test caught a bug where it could be). |
 | min hits to confirm | 2 | hits | suppress one-frame false detections | Added constant. Only confirmed observations feed the event rules. |
 | velocity smoothing | 0.5 | EMA weight | damp noisy box motion | Added constant, not tuned. |

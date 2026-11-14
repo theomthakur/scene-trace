@@ -6,7 +6,7 @@
 
 **Measured here (one Apple M4, CPU, torch 2.15.0, torchvision 0.29.2):** about 73 ms per sampled 960 px frame; 75 sampled frames of the 15 s pedestrian clip in about 5.6 s (2.6x real time); the 20 s rush-hour clip in about 8 s. Repeated runs on this machine gave byte-identical observations. MPS and CUDA are opt-in and were not used.
 
-**Known weaknesses seen:** under heavy crowding the baseline tracker fragments identities (about 117 tracks for roughly 9 people per frame at 5 fps); a car that stays still produced two track fragments; partially cropped people near the frame edge have unreliable ground contact.
+**Known weaknesses seen:** under heavy crowding the baseline tracker made about 117 tracks for roughly 9 people per frame at 5 fps in a crowded clip (identity splits and switches are possible but unmeasured, since no ground-truth tracks exist; in the frozen test no duplicate tracks of one car were found); partially cropped people near the frame edge have unreliable ground contact.
 
 **Tracker:** custom per-class constant-velocity prediction over real elapsed time, IoU gate 0.20, Hungarian assignment (`scipy.optimize.linear_sum_assignment`), tentative, confirmed, lost and ended states, IDs never recycled, no re-identification.
 

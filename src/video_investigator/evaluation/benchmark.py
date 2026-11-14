@@ -108,7 +108,7 @@ def audit_summary(audits: list[dict]) -> dict | None:
     Unlabelled events are counted as such, never assumed correct. Recall is not defined here."""
     if not audits:
         return None
-    labels = json.loads(AUDIT_LABELS.read_text()) if AUDIT_LABELS.is_file() else {}
+    labels = json.loads(AUDIT_LABELS.read_text()).get("events", {}) if AUDIT_LABELS.is_file() else {}
     rows = [{"unit": a["unit"], "clip": a["clip"], "event_id": p["event_id"], "start_ms": p["start_ms"], "end_ms": p["end_ms"], "track_ids": p["track_ids"], "flags": p["uncertainty_flags"],
              "label": (labels.get(p["event_id"]) or {}).get("label", "unlabelled"), "note": (labels.get(p["event_id"]) or {}).get("note", "")} for a in audits for p in a["pred"]]
     count = lambda k: sum(1 for r in rows if r["label"] == k)
@@ -225,3 +225,23 @@ def run_reliability(include_test3: bool) -> dict:
                                   "negative_units": sum(1 for x in srcs if x["split"] == s for u in x["units"] if not u["truth"] and not u.get("audit")), "audit_units": sum(1 for x in srcs if x["split"] == s for u in x["units"] if u.get("audit"))}
                               for s in ("development-3", "test-3")},
             "annotation": manifest["annotation"], "lanes": lanes, "limits": manifest.get("limits", [])}
+
+
+def refresh_audit() -> dict:
+    """Recompute ONLY the audit summary in the saved third-batch report from the current labels. The detector is not run and no prediction changes: the saved events are re-read and
+    their ids must match what the report already holds."""
+    path = REPO / "docs" / "evidence" / "benchmark-reliability.json"; rep = json.loads(path.read_text())
+    for lane_name in ("development_3", "test_3"):
+        lane = rep["lanes"][lane_name]
+        if lane.get("status") == "not_evaluated" or not lane.get("audit"):
+            continue
+        events = lane["audit"]["events"]
+        fake = [{"unit": e["unit"], "clip": e["clip"], "pred": [{"event_id": e["event_id"], "start_ms": e["start_ms"], "end_ms": e["end_ms"], "track_ids": e["track_ids"], "uncertainty_flags": e["flags"]}]} for e in events]
+        new = audit_summary(fake)
+        assert [e["event_id"] for e in new["events"]] == [e["event_id"] for e in events], "predictions must be unchanged"
+        lane["audit"] = new
+    path.write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
+    t3 = REPO / "docs" / "evidence" / "test3-results.json"
+    if t3.is_file():
+        cur = json.loads(t3.read_text()); cur["lane"] = rep["lanes"]["test_3"]; t3.write_text(json.dumps(cur, indent=2, sort_keys=True, default=float) + "\n")
+    return rep

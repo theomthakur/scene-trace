@@ -7,6 +7,8 @@ This repository does **not** redistribute model weights or demonstration video. 
 |---|---|---|---|
 | pedestrian_area.webm | https://commons.wikimedia.org/wiki/File:Video_Codec_Test_pedestrian_area_1080p25.y4m.webm (author: Taurus Media Technik, Xiph.org test media, 2013) | CC0 1.0, with a Commons licence-review tag dated 2013-02-20 | Not committed. Fetched on demand and checked against the SHA-1 Commons publishes. |
 | rush_hour.webm | https://commons.wikimedia.org/wiki/File:Video_Codec_Test_rush_hour_1080p25.y4m.webm (same author) | CC0 1.0 | Not committed. Same handling. |
+| mall_corridor, entrance (reliability batch) | Wikimedia Commons, Ljubljana recordings, author Barbara Rezar Grilc (exact files in `fixtures/benchmark/manifest_reliability.json`) | CC BY 3.0 | Not committed. Fetched on demand; attribution required. |
+| platform (reliability batch) | Wikimedia Commons, author Assaf Yekuel (see the same manifest) | CC BY-SA 4.0 | Not committed. Fetched on demand; share-alike applies to any redistribution. |
 
 I relied on the Commons licence statement and review tag. I did not independently verify the upstream Xiph terms. The clips show members of the public in public places and a legible vehicle licence plate in the foreground of rush_hour. The application does not recognise faces or plates and does not identify anyone.
 

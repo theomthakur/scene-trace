@@ -1,0 +1,563 @@
+{
+  "annotation": {
+    "method": "Negative units: zones judged empty from raw decoded frames (every 1 to 5 s) with only the zone outline drawn. 'Audit' units: no ground-truth events were annotated, because shoppers' feet sit at zone boundaries and several people overlap; instead EVERY event the system raised was reviewed against its own saved evidence frames and labelled supported, unsupported or ambiguous (fixtures/benchmark/audit_labels.json). Recall is NOT measured for audit units.",
+    "reviewer_note": "One reviewer (the implementing assistant), not expert consensus. Audit labels are written after the system's predictions exist; they cannot change them.",
+    "reviewers": 1,
+    "temporal_match": "n/a for negatives and audit units"
+  },
+  "code_commit": "981e79e88cd33473fef681572ed6695c386bb224",
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "detector": {
+    "base_weights": null,
+    "box_format": "normalized xyxy",
+    "device": "cpu",
+    "name": "fasterrcnn_mobilenet_v3_large_320_fpn",
+    "num_coco_categories": 91,
+    "score_threshold": 0.5,
+    "supported_classes": [
+      "person",
+      "bicycle",
+      "car",
+      "motorcycle",
+      "bus",
+      "truck",
+      "backpack",
+      "handbag",
+      "suitcase"
+    ],
+    "torch": "2.15.0",
+    "torchvision": "0.29.2",
+    "weights": "COCO_V1",
+    "weights_file": "fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth",
+    "weights_sha256": "907ea3f91ff92242bc1baea8049276a3e76bca48ce7560bd268cc029f37977b5",
+    "weights_url": "https://download.pytorch.org/models/fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth"
+  },
+  "generated_at": "2026-11-14T22:53:10.767963+00:00",
+  "hardware": "arm64 macOS-26.5.1-arm64-arm-64bit, device cpu",
+  "headline": "Third batch: negatives and audited units in new conditions (busy indoor, low light, glass). Descriptive only; no recall is measured.",
+  "lanes": {
+    "development_3": {
+      "audit": null,
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.01717,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 0,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": null,
+        "onset_matched_count": 0,
+        "precision": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no predicted events",
+          "value": null
+        },
+        "recall": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no ground-truth events",
+          "value": null
+        },
+        "true_positives": 0
+      },
+      "notes": [],
+      "per_clip": {
+        "runs": [
+          {
+            "clip": "mall_corridor",
+            "detections": 119,
+            "observations_sha256": "8b02680da833c6406e201c8baa4eedde9d34985702c7076cf103cc237c7df07c",
+            "quality_flags": [],
+            "sampled_frames": 309,
+            "timings": {
+              "detect_ms_per_frame": 68.0,
+              "detect_s": 21.018,
+              "detections": 119,
+              "realtime_factor": 2.805,
+              "sampled_frames": 309,
+              "total_s": 21.961
+            },
+            "tracks": 32
+          }
+        ],
+        "units": [
+          {
+            "audit": false,
+            "clip": "mall_corridor",
+            "false_positives": [],
+            "hours": 0.017165555555555555,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "d3-balcony-negative"
+          }
+        ]
+      },
+      "scope": "1 source recording(s): mall_corridor. 0 annotated events across 1 evaluation units (1 negative). Real pixel inference with pretrained COCO weights.",
+      "status": "evaluated"
+    },
+    "test_3": {
+      "audit": {
+        "ambiguous": 5,
+        "audited_precision": {
+          "denominator": 19,
+          "numerator": 19,
+          "undefined_reason": null,
+          "value": 1.0
+        },
+        "events": [
+          {
+            "clip": "entrance",
+            "end_ms": 5600,
+            "event_id": "d3a0c6878b04",
+            "flags": [],
+            "label": "ambiguous",
+            "note": "track 1, 0.6 to 5.6 s: a person is at the left edge in the dark first frame and a pink-coat woman there at the end; the identity may have switched",
+            "start_ms": 600,
+            "track_ids": [
+              1
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 3400,
+            "event_id": "ce04f475517f",
+            "flags": [],
+            "label": "supported",
+            "note": "a shopper left of the entrance in all three frames",
+            "start_ms": 600,
+            "track_ids": [
+              2
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 29800,
+            "event_id": "195d34d204ed",
+            "flags": [],
+            "label": "ambiguous",
+            "note": "track 3, 0.6 to 29.8 s: the dark-jacket cart collector, clearly in the zone in the middle frame; the 29 s identity continuity is unverified and the last frame is at the right image edge",
+            "start_ms": 600,
+            "track_ids": [
+              3
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 2400,
+            "event_id": "f9db158cc8a7",
+            "flags": [],
+            "label": "ambiguous",
+            "note": "track 4: small person at confidence 0.57, overlapped by others",
+            "start_ms": 600,
+            "track_ids": [
+              4
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 4400,
+            "event_id": "c7ea77b83134",
+            "flags": [],
+            "label": "supported",
+            "note": "shopper with a cart near the gate, confidence 0.89 to 0.93",
+            "start_ms": 600,
+            "track_ids": [
+              5
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 7200,
+            "event_id": "46edee3664c2",
+            "flags": [
+              "track_lost_while_active"
+            ],
+            "label": "supported",
+            "note": "white-jacket shopper at the gate, confidence about 0.6; flagged track_lost_while_active",
+            "start_ms": 3200,
+            "track_ids": [
+              12
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 5400,
+            "event_id": "13a83d5f1810",
+            "flags": [],
+            "label": "supported",
+            "note": "small shopper inside the entrance, 0.75 to 0.83",
+            "start_ms": 3600,
+            "track_ids": [
+              15
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 5600,
+            "event_id": "cc0bb7318bf8",
+            "flags": [
+              "track_lost_while_active"
+            ],
+            "label": "supported",
+            "note": "shopper inside the entrance, 0.62 to 0.80; flagged track_lost_while_active",
+            "start_ms": 3800,
+            "track_ids": [
+              16
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 6200,
+            "event_id": "b364f05930ae",
+            "flags": [],
+            "label": "ambiguous",
+            "note": "track 17: low confidence (0.52 to 0.59), overlapped by others",
+            "start_ms": 4000,
+            "track_ids": [
+              17
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 6600,
+            "event_id": "0dbda922a71d",
+            "flags": [],
+            "label": "supported",
+            "note": "pink-coat woman at the left edge of the entrance, visible in all three frames",
+            "start_ms": 4600,
+            "track_ids": [
+              19
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 9600,
+            "event_id": "e585230014df",
+            "flags": [
+              "track_lost_while_active"
+            ],
+            "label": "supported",
+            "note": "pink-coat woman near the gate, 0.58 to 0.74; flagged track_lost_while_active",
+            "start_ms": 6800,
+            "track_ids": [
+              25
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 12200,
+            "event_id": "2bddd5c6210d",
+            "flags": [],
+            "label": "supported",
+            "note": "dark-jacket shopper at the left, 0.58 to 0.69",
+            "start_ms": 7200,
+            "track_ids": [
+              26
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 9400,
+            "event_id": "e808c28701d7",
+            "flags": [],
+            "label": "supported",
+            "note": "white-jacket shopper standing by the gate, about 0.55 to 0.6",
+            "start_ms": 8200,
+            "track_ids": [
+              12
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 12800,
+            "event_id": "677c231be69c",
+            "flags": [],
+            "label": "supported",
+            "note": "shopper at the left of the entrance, 0.61 to 0.73",
+            "start_ms": 10200,
+            "track_ids": [
+              31
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 14200,
+            "event_id": "766cb14567ad",
+            "flags": [],
+            "label": "supported",
+            "note": "pink-coat woman in the entrance, 0.53 to 0.71",
+            "start_ms": 11200,
+            "track_ids": [
+              25
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 15600,
+            "event_id": "5e7cd34e1e42",
+            "flags": [
+              "track_lost_while_active"
+            ],
+            "label": "supported",
+            "note": "small shopper by the gate, 0.52 to 0.68; flagged track_lost_while_active",
+            "start_ms": 14600,
+            "track_ids": [
+              36
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 18800,
+            "event_id": "3d6950e9d371",
+            "flags": [],
+            "label": "supported",
+            "note": "shopper at the left gate, confidence 0.88",
+            "start_ms": 16800,
+            "track_ids": [
+              37
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 26000,
+            "event_id": "9ef0ca37e492",
+            "flags": [],
+            "label": "supported",
+            "note": "small shopper at the gate, 0.55 to 0.68",
+            "start_ms": 24600,
+            "track_ids": [
+              45
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 42400,
+            "event_id": "60556cf24754",
+            "flags": [],
+            "label": "supported",
+            "note": "man in a dark jacket walking in front of the gate, clear in all three frames",
+            "start_ms": 35600,
+            "track_ids": [
+              52
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 51600,
+            "event_id": "e012d4638ded",
+            "flags": [],
+            "label": "ambiguous",
+            "note": "track 54, 39.2 to 51.6 s: the cart collector; the first frame shows a person at the right image edge, and 12 s of continuity is unverified",
+            "start_ms": 39200,
+            "track_ids": [
+              54
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 48200,
+            "event_id": "73716aca9d58",
+            "flags": [],
+            "label": "supported",
+            "note": "man in a red jacket at the left, 0.86 to 1.0",
+            "start_ms": 44200,
+            "track_ids": [
+              66
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 62000,
+            "event_id": "ee8f37dfcf65",
+            "flags": [
+              "still_active_at_video_end"
+            ],
+            "label": "supported",
+            "note": "the cart collector for 10 s; the final frame is almost black (video fade-out) but the person is still visible; flagged still_active_at_video_end",
+            "start_ms": 51800,
+            "track_ids": [
+              74
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 58000,
+            "event_id": "e484c62ae8df",
+            "flags": [],
+            "label": "supported",
+            "note": "man at the left edge then at the gate, 0.56 to 0.98",
+            "start_ms": 53200,
+            "track_ids": [
+              77
+            ],
+            "unit": "t3-walkway-audit"
+          },
+          {
+            "clip": "entrance",
+            "end_ms": 59800,
+            "event_id": "40be28cef781",
+            "flags": [
+              "track_lost_while_active"
+            ],
+            "label": "supported",
+            "note": "shopper at the gate, 0.56 to 0.90; flagged track_lost_while_active",
+            "start_ms": 57600,
+            "track_ids": [
+              81
+            ],
+            "unit": "t3-walkway-audit"
+          }
+        ],
+        "predicted_events": 24,
+        "recall": "not measured: no exhaustive ground truth exists for these units",
+        "supported": 19,
+        "unlabelled": 0,
+        "unsupported": 0
+      },
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.02107,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 0,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": null,
+        "onset_matched_count": 0,
+        "precision": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no predicted events",
+          "value": null
+        },
+        "recall": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no ground-truth events",
+          "value": null
+        },
+        "true_positives": 0
+      },
+      "notes": [],
+      "per_clip": {
+        "runs": [
+          {
+            "clip": "entrance",
+            "detections": 841,
+            "observations_sha256": "1223e792d0a6f48b737fe6387cc56065d9f9e9c4d6650ec597bc96f9f129f7c1",
+            "quality_flags": [],
+            "sampled_frames": 312,
+            "timings": {
+              "detect_ms_per_frame": 68.3,
+              "detect_s": 21.312,
+              "detections": 841,
+              "realtime_factor": 2.788,
+              "sampled_frames": 312,
+              "total_s": 22.307
+            },
+            "tracks": 88
+          },
+          {
+            "clip": "platform",
+            "detections": 12,
+            "observations_sha256": "477a5c2180fa6625d5792f29f928af10c6b7a121b1908cd36264fcef476b56cd",
+            "quality_flags": [],
+            "sampled_frames": 68,
+            "timings": {
+              "detect_ms_per_frame": 69.1,
+              "detect_s": 4.698,
+              "detections": 12,
+              "realtime_factor": 2.803,
+              "sampled_frames": 68,
+              "total_s": 4.78
+            },
+            "tracks": 10
+          }
+        ],
+        "units": [
+          {
+            "audit": false,
+            "clip": "entrance",
+            "false_positives": [],
+            "hours": 0.017320277777777778,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "t3-floor-negative"
+          },
+          {
+            "audit": false,
+            "clip": "platform",
+            "false_positives": [],
+            "hours": 0.0037519444444444445,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "t3-platform-negative"
+          }
+        ]
+      },
+      "scope": "2 source recording(s): entrance, platform. 0 annotated events across 3 evaluation units (3 negative). Real pixel inference with pretrained COCO weights.",
+      "status": "evaluated"
+    }
+  },
+  "limits": [
+    "No positive events are annotated in this batch: recall is unmeasured here.",
+    "Audit precision depends on one reviewer's reading of the evidence frames; ambiguous cases are reported separately rather than forced into a class.",
+    "Three recordings, about 2.3 minutes in total. Each recording is a single scene: this says nothing about other buildings, cameras or lighting."
+  ],
+  "manifest_sha256": "3bb5e737d0c280c494604a6042b8b43df4113fedcf8a03ccb5a62ec5ac094486",
+  "sample_counts": {
+    "development-3": {
+      "audit_units": 0,
+      "negative_units": 1,
+      "recordings": 1,
+      "video_seconds": 61.8
+    },
+    "test-3": {
+      "audit_units": 1,
+      "negative_units": 2,
+      "recordings": 2,
+      "video_seconds": 75.9
+    }
+  }
+}
