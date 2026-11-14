@@ -1,0 +1,4 @@
+[
+  {"id": "z-restricted", "name": "Restricted strip", "role": "restricted", "polygon": [[0.35, 0.60], [0.65, 0.60], [0.65, 0.95], [0.35, 0.95]]},
+  {"id": "z-corner", "name": "Upper-left facade", "role": "restricted", "polygon": [[0.02, 0.10], [0.30, 0.10], [0.30, 0.30], [0.02, 0.30]]}
+]

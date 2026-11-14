@@ -37,6 +37,8 @@ def pick_device(requested: str) -> str:
 
 
 class Detector:
+    source = "detector"          # tag carried into observations and events; test doubles use "fixture"
+
     def __init__(self, settings: Settings):
         cfg = settings.detector
         if cfg.name != "fasterrcnn_mobilenet_v3_large_320_fpn" or cfg.weights != "COCO_V1":

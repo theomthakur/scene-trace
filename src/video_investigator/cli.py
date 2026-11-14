@@ -54,37 +54,6 @@ def load_zones(path):
     return zones
 
 
-def process_video(video: Path, zones, settings, out_root: Path, *, run_id: str | None = None, on_progress=None, should_cancel=None, max_frames=None):
-    """Run the whole pipeline on one video and publish an attempt directory. Returns (attempt_dir, summary)."""
-    import uuid
-    from . import PIPELINE_VERSION
-    from .events.rules import detect_events
-    from .media.probe import probe, validate_limits, sha256_file
-    from .reports.artifacts import next_attempt_dir, publish_manifest, write_json, write_jsonl
-    from .vision.pipeline import run_detection
-    info = probe(video)
-    validate_limits(info, max_bytes=settings.limits.upload_max_bytes, max_seconds=settings.limits.upload_max_seconds)
-    run_id = run_id or str(uuid.uuid4())
-    attempt = next_attempt_dir(out_root / run_id)
-    det = run_detection(video, info, settings, on_progress=on_progress, should_cancel=should_cancel, max_frames=max_frames)
-    start_ms = det.sampled_times_ms[0] if det.sampled_times_ms else 0
-    end_ms = det.sampled_times_ms[-1] if det.sampled_times_ms else 0
-    events = detect_events(det.observations, zones, settings, det.frame_size, video_start_ms=start_ms, video_end_ms=end_ms, source="detector")
-    obs_rows = [{"t_ms": o.t_ms, "track_id": o.track_id, "class_id": o.class_id, "class_name": o.class_name, "confidence": round(o.confidence, 4),
-                 "box": [round(x, 5) for x in o.box], "coordinate_space": "normalized_xyxy_upright", "track_state": o.track_state, "source": "detector"}
-                for o in det.observations]
-    video_sha = sha256_file(video)
-    run_meta = {"run_id": run_id, "attempt": attempt.name, "pipeline_version": PIPELINE_VERSION, "config": settings.model_dump(), "config_hash": settings.config_hash(),
-                "video": {"path_name": video.name, "sha256": video_sha, **info.to_dict()}, "detector": det.detector_info, "tracker": "custom-iou-hungarian-baseline",
-                "rule_version": "rules-1", "processed_frame_size": list(det.frame_size), "timings": det.timings, "quality_flags": det.quality_flags,
-                "zones": [{"id": z.id, "name": z.name, "role": z.role, "polygon": z.polygon} for z in zones], "sampled_frames": len(det.sampled_times_ms)}
-    files = {"observations.jsonl": write_jsonl(attempt / "observations.jsonl", obs_rows),
-             "events.json": write_json(attempt / "events.json", [e.to_dict() for e in events]),
-             "run.json": write_json(attempt / "run.json", run_meta)}
-    publish_manifest(attempt, files, {"video_sha256": video_sha, "config_hash": settings.config_hash(), "status": "completed"})
-    return attempt, {"observations": len(obs_rows), "events": len(events), "tracks": len({o.track_id for o in det.observations}), **det.timings, "quality_flags": det.quality_flags}
-
-
 def cmd_process(args) -> int:
     from .config import load_settings
     settings = load_settings(args.config, overrides=None)
@@ -96,8 +65,9 @@ def cmd_process(args) -> int:
         if n - last["n"] >= 10 or n == total:
             last["n"] = n; print(f"  sampled frames {n}/{total}", file=sys.stderr, flush=True)
 
-    attempt, summary = process_video(Path(args.video), zones, settings, out_root, on_progress=progress, max_frames=args.max_frames)
-    print(json.dumps({"attempt_dir": str(attempt), **summary}, indent=2))
+    from .runner import process_video
+    res = process_video(Path(args.video), zones, settings, out_root, on_progress=lambda n, total, _t: progress(n, total), max_frames=args.max_frames)
+    print(json.dumps({"attempt_dir": str(res["attempt_dir"]), **res["summary"]}, indent=2))
     return 0
 
 

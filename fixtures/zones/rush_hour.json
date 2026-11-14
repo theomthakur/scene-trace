@@ -1,0 +1,4 @@
+[
+  {"id": "z-people", "name": "Pavement strip (people)", "role": "restricted", "polygon": [[0.02, 0.45], [0.98, 0.45], [0.98, 0.60], [0.02, 0.60]]},
+  {"id": "z-lane", "name": "Centre lane", "role": "passage", "polygon": [[0.30, 0.55], [0.70, 0.55], [0.70, 1.0], [0.30, 1.0]]}
+]

@@ -23,10 +23,11 @@ class DetectionRun:
     timings: dict
     quality_flags: list[str] = field(default_factory=list)
     detector_info: dict = field(default_factory=dict)
+    source: str = "detector"
 
 
 def run_detection(path: Path | str, info: VideoInfo, settings: Settings, detector: Detector | None = None, *,
-                  on_progress: Callable[[int, int], None] | None = None, should_cancel: Callable[[], bool] | None = None,
+                  on_progress: Callable[[int, int, int], None] | None = None, should_cancel: Callable[[], bool] | None = None,
                   max_frames: int | None = None) -> DetectionRun:
     detector = detector or Detector(settings)
     p = settings.tracker
@@ -52,7 +53,7 @@ def run_detection(path: Path | str, info: VideoInfo, settings: Settings, detecto
         observations.extend(tracker.update(fr.t_ms, dets))
         times.append(fr.t_ms)
         if on_progress:
-            on_progress(fr.sample_index + 1, expected)
+            on_progress(fr.sample_index + 1, expected, fr.t_ms)
     if not times:
         flags.add("no_frames_decoded")
     else:
@@ -66,4 +67,4 @@ def run_detection(path: Path | str, info: VideoInfo, settings: Settings, detecto
     timings = {"total_s": round(total_s, 3), "detect_s": round(detect_s, 3), "sampled_frames": len(times), "detections": n_det,
                "detect_ms_per_frame": round(1000 * detect_s / max(1, len(times)), 1),
                "realtime_factor": round((times[-1] - times[0]) / 1000.0 / total_s, 3) if len(times) > 1 and total_s > 0 else None}
-    return DetectionRun(observations, times, size, timings, sorted(flags), detector.info())
+    return DetectionRun(observations, times, size, timings, sorted(flags), detector.info(), getattr(detector, "source", "detector"))
