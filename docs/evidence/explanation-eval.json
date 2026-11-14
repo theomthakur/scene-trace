@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-11-14T17:30:59Z",
+  "model": {
+    "name": "HuggingFaceTB/SmolVLM-500M-Instruct",
+    "revision": "753c1752602b5e739af7a7fa6947a635051897a3"
+  },
+  "events": 21,
+  "rated": 21,
+  "stale_ratings": [],
+  "annotation": {
+    "reviewers": 1,
+    "method": "Each text was compared with the exact crop the model saw (viewed on a contact sheet). The prompt wording was chosen after a pilot on 4 of these events (see docs), so those 4 are not an untouched test.",
+    "caveat": "One rater, 21 items: descriptive only."
+  },
+  "rubric": {
+    "mostly_supported": "every claim about the object is visible in the crop (small count or detail slips allowed)",
+    "mixed": "some claims visible, at least one clearly invented or wrong",
+    "mostly_unsupported": "most claims are invented or wrong",
+    "invented": "describes an object, person or detail that is not in the crop",
+    "states_uncertainty": "says that something cannot be seen clearly"
+  },
+  "verdicts": {
+    "mostly_supported": 3,
+    "mostly_unsupported": 6,
+    "mixed": 12
+  },
+  "invented_detail": {
+    "count": 17,
+    "of": 21
+  },
+  "states_uncertainty": {
+    "count": 1,
+    "of": 21
+  },
+  "automatic_flags": {
+    "flagged": 10,
+    "of": 21,
+    "flagged_and_bad": 8,
+    "flagged_but_not_bad": 2,
+    "bad_but_not_flagged": 9,
+    "bad_total": 17,
+    "note": "'bad' = rubric verdict mostly_unsupported OR an invented detail. Flags are cheap string checks, not a verifier."
+  },
+  "latency_s": {
+    "mean": 1.37,
+    "max": 2.3
+  },
+  "identifier_redactions": 1,
+  "items": [
+    {
+      "event_id": "97dc222a48ce",
+      "clip": "pedestrian_area",
+      "text": "Person wearing a blue shirt carrying two white bags walking on the sidewalk.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mostly_supported",
+      "note": "blue top and a white bag match; says two bags, one is visible"
+    },
+    {
+      "event_id": "57f428aaf5b7",
+      "clip": "pedestrian_area",
+      "text": "Person in front is wearing a white shirt with black pants and blue jeans. He has his hands on the ground as he walks. The second person behind him is wearing a grey t-shirt and dark trousers. They have their arms crossed over their chest and appear to be looking down at something. There is no visible object that can be identified by name or description.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mostly_unsupported",
+      "note": "invents hands on the ground and crossed arms; clothing description is confused"
+    },
+    {
+      "event_id": "e82bdaf608c1",
+      "clip": "pedestrian_area",
+      "text": "A man is walking on a sidewalk carrying a black bag over his shoulder. He has white hair and wears glasses.",
+      "flags": [
+        "mentions_object_not_in_detections: handbag"
+      ],
+      "status": "flagged",
+      "rating": "mostly_supported",
+      "note": "older man with a bag or backpack on the shoulder matches"
+    },
+    {
+      "event_id": "4b7cfe54a9d2",
+      "clip": "pedestrian_area",
+      "text": "Person carrying a white bag walking on the sidewalk holding hands with another person.",
+      "flags": [
+        "mentions_object_not_in_detections: handbag"
+      ],
+      "status": "flagged",
+      "rating": "mixed",
+      "note": "white bag matches; 'holding hands' is invented"
+    },
+    {
+      "event_id": "f81dbdf978a4",
+      "clip": "pedestrian_area",
+      "text": "Person in black suit carrying a white bag walking on the sidewalk.",
+      "flags": [
+        "mentions_object_not_in_detections: handbag"
+      ],
+      "status": "flagged",
+      "rating": "mixed",
+      "note": "dark clothing matches; no white bag is visible"
+    },
+    {
+      "event_id": "43b443b5cd7b",
+      "clip": "pedestrian_area",
+      "text": "A man is walking on a sidewalk holding his phone in one hand while the other holds something that looks like a wallet. He wears black pants with white stripes down the side of them, black sneakers, sunglasses, and a short-sleeve shirt.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "sunglasses, black shirt and trousers match; phone, wallet and white stripes are invented"
+    },
+    {
+      "event_id": "2fda9f732b35",
+      "clip": "pedestrian_area",
+      "text": "A woman is walking on the sidewalk holding a cell phone in her right hand. She has long hair that falls over her shoulders. She wears black tank tops with white writing on them. The background shows an out of focus storefront window behind her.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "black top and long hair match; cell phone is not visible"
+    },
+    {
+      "event_id": "f4a84c625c8e",
+      "clip": "rush_hour",
+      "text": "The white car has a black bumper with two small black rectangular lights on the left side of it. It also has a black door handle in front that is slightly curved upwards at an angle. There is a silver roof rack above the top of the car. In the background there are other cars parked behind it.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "a pale car close-up is right; roof rack and bumper details are invented"
+    },
+    {
+      "event_id": "e165c9641045",
+      "clip": "rush_hour",
+      "text": "The black car is parked on the street. It has a red license plate. There is a person in the backseat of the car who is wearing a white shirt with blue jeans. He is holding something in his hand.",
+      "flags": [
+        "mentions_object_not_in_detections: person"
+      ],
+      "status": "flagged",
+      "rating": "mostly_unsupported",
+      "note": "invents a person in the back seat and a red plate"
+    },
+    {
+      "event_id": "a46d3ff6103f",
+      "clip": "rush_hour",
+      "text": "Black car with a person in it. The person is wearing black jacket and white shirt. They have their hands on the steering wheel.",
+      "flags": [
+        "mentions_object_not_in_detections: person"
+      ],
+      "status": "flagged",
+      "rating": "mostly_unsupported",
+      "note": "invents a person with hands on the wheel"
+    },
+    {
+      "event_id": "d916a30b7948",
+      "clip": "rush_hour",
+      "text": "The black car has a hood that is open. There is something inside the car but it can't be seen clearly. It looks like there might be some clothes in the trunk of the car.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mostly_unsupported",
+      "note": "invents an open hood and clothes; says some things cannot be seen clearly"
+    },
+    {
+      "event_id": "5b536c23ff80",
+      "clip": "rush_hour",
+      "text": "The car is red in color. It has a roof rack on top of it. There is a person sitting inside the car. He is wearing a white shirt.",
+      "flags": [
+        "mentions_object_not_in_detections: person"
+      ],
+      "status": "flagged",
+      "rating": "mostly_unsupported",
+      "note": "calls a silver van red and invents a person inside"
+    },
+    {
+      "event_id": "20d0fd1c22b0",
+      "clip": "rush_hour",
+      "text": "The grey sedan is parked on the street. It has a black sunroof. There is a bag in its trunk.",
+      "flags": [
+        "mentions_object_not_in_detections: handbag"
+      ],
+      "status": "flagged",
+      "rating": "mixed",
+      "note": "grey car plausible; invents a bag in the trunk"
+    },
+    {
+      "event_id": "c7ee7e6abb75",
+      "clip": "rush_hour",
+      "text": "The car is red in color. It has a black bumper with two headlights on the top of it. There is a silver door handle to the right side of the image.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "calls the silver van red; other details are generic"
+    },
+    {
+      "event_id": "3f724575ce4e",
+      "clip": "rush_hour",
+      "text": "The white car has a black hood ornament hanging from the top of it. It is parked on the side of the road with other cars behind it. There is something in the backseat that looks like a bag or suitcase.",
+      "flags": [
+        "mentions_object_not_in_detections: handbag",
+        "mentions_object_not_in_detections: suitcase"
+      ],
+      "status": "flagged",
+      "rating": "mixed",
+      "note": "white vehicle matches; invents a bag or suitcase on the back seat"
+    },
+    {
+      "event_id": "87d08fd80c84",
+      "clip": "rush_hour",
+      "text": "The red car has a license plate which reads [redacted]. It is parked on the side of the road with other cars in front of it. There are traffic lights at the intersection behind the car.",
+      "flags": [
+        "identifier_redacted: 1 identifier-like string(s) removed; this platform does not read plates or IDs"
+      ],
+      "status": "flagged",
+      "rating": "mostly_supported",
+      "note": "red car, rear plate and traffic lights are right; 'parked' is wrong (queueing). The plate text is an identifier and is redacted"
+    },
+    {
+      "event_id": "68cfc5afccd3",
+      "clip": "rush_hour",
+      "text": "The black car has red lights on the roof. It is parked in a parking lot. There is another vehicle behind it that is not as clear but looks like a white van.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "red rear lights match; roof lights and parking lot are invented"
+    },
+    {
+      "event_id": "e885435d9e3b",
+      "clip": "rush_hour",
+      "text": "The black-and-white vehicle is parked on the street. It has a shiny silver roof rack with two small windows above it. There's a person standing behind the rear wheel of the vehicle wearing dark sunglasses. They have short hair and are holding something in their hand.",
+      "flags": [
+        "mentions_object_not_in_detections: person"
+      ],
+      "status": "flagged",
+      "rating": "mixed",
+      "note": "a person at the window exists; sunglasses and position are invented"
+    },
+    {
+      "event_id": "4808d1a83773",
+      "clip": "rush_hour",
+      "text": "The black car has red lights on the top of it. It is parked in a parking lot.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "red rear lights match; roof lights and parking lot are invented"
+    },
+    {
+      "event_id": "ff8c5c7df67a",
+      "clip": "rush_hour",
+      "text": "The grey sedan is parked in a parking lot. It has black windows on the sides of it. There is a red traffic light behind it.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mostly_unsupported",
+      "note": "invents a parking lot and a red traffic light"
+    },
+    {
+      "event_id": "593c2d614ead",
+      "clip": "rush_hour",
+      "text": "The black car has a red light on the roof. It is parked in front of other cars.",
+      "flags": [],
+      "status": "ok",
+      "rating": "mixed",
+      "note": "a dark vehicle matches; the red roof light is invented"
+    }
+  ],
+  "reading": "A 500M-parameter model on 21 crops, one rater. Most descriptions mix real and invented details, so the UI labels them unverified and never lets them alter an event."
+}

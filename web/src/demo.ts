@@ -27,6 +27,8 @@ export const demoBackend: Backend = {
     return { results: hits, interpreted: { event_types: [], classes: [], zone_ids: [], review_status: [], understood: ['plain text match on descriptions (static demo)'], ignored_terms: [], after_ms: null, before_ms: null }, unsupported: false, notices: ['Static demo: simple text match over precomputed event descriptions.'], limit: 50 }
   },
   semanticSearch: async () => { throw new ApiError(0, 'demo_read_only', 'Semantic search needs the live backend and its embedding model. The static demo supports keyword search only.') },
+  explain: async () => { throw new ApiError(0, 'demo_read_only', 'Descriptions need the live backend and its vision-language model.') },
+  explanations: async () => [],
   review: async () => readOnly(),
   evidenceUrl: (ev, name) => `/demo/evidence/${ev.event_key}/${name}`,
   reportUrl: (_r, format) => `/demo/report.${format === 'markdown' ? 'md' : format}`,

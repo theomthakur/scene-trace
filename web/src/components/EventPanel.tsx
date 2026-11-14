@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
-import { ApiError, type Backend, type EventT, type SemanticInfo } from '../api'
+import { ApiError, type Backend, type EventT, type ExplanationT, type SemanticInfo } from '../api'
 import { fmt, TYPE_LABEL } from './Timeline'
 
 export const FLAG_TEXT: Record<string, string> = {
@@ -125,6 +125,7 @@ export function EvidenceDrawer({ ev, backend, onSeek, onChanged, readOnly }: { e
       </div>
       {ev.evidence.clip && <><h3>Context clip <span className="muted">{fmt(ev.evidence.clip_range_ms[0])} to {fmt(ev.evidence.clip_range_ms[1])}</span></h3><video className="clip" controls preload="none" src={backend.evidenceUrl(ev, 'clip.mp4')} /></>}
       {ev.evidence.clip_error && <p className="notice warn">Clip unavailable: {ev.evidence.clip_error}</p>}
+      <ExplainPanel ev={ev} backend={backend} onSeek={onSeek} readOnly={readOnly} />
       <h3>Review</h3>
       <fieldset disabled={readOnly || saving}>
         <legend className="sr">Verdict</legend>
@@ -135,6 +136,55 @@ export function EvidenceDrawer({ ev, backend, onSeek, onChanged, readOnly }: { e
       {readOnly && <p className="muted">Static demo: reviews are not saved.</p>}
       {msg && <p className={`notice ${msg.kind === 'ok' ? 'info' : 'err'}`} role="status">{msg.text}</p>}
       <p className="muted">Current: {REVIEW_LABEL[ev.review_status]} (revision {ev.review_version}){ev.reviewed_at ? `, ${ev.reviewed_at}` : ''}</p>
+    </section>
+  )
+}
+
+
+const EXPLAIN_FLAG_HELP: Record<string, string> = {
+  unsupported_inference_words: 'Contains wording about intent or judgement that the platform does not support.',
+  time_outside_evidence: 'Mentions a time outside this event, so it is not grounded in the saved frames.',
+  mentions_object_not_in_detections: 'Mentions an object the detector did not report in these frames. It may be real or invented: check the frame.',
+  uninformative: 'Adds almost nothing beyond the object class.',
+  degenerate_output: 'The model produced unusable text.',
+  identifier_redacted: 'Identifier-like text (such as a plate) was removed. This platform does not read plates or IDs.',
+  multi_image_input: 'Several images at once make this small model markedly less reliable.',
+}
+const flagHelp = (f: string) => EXPLAIN_FLAG_HELP[f.split(':')[0]] ?? ''
+
+export function ExplainPanel({ ev, backend, onSeek, readOnly }: { ev: EventT; backend: Backend; onSeek: (ms: number) => void; readOnly: boolean }) {
+  const [items, setItems] = useState<ExplanationT[]>([]); const [roles, setRoles] = useState<string[]>(['mid']); const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<{ kind: 'warn' | 'err'; text: string } | null>(null)
+  useEffect(() => { setItems([]); setMsg(null); if (!readOnly) backend.explanations(ev.id).then(setItems).catch(() => undefined) }, [ev.id, backend, readOnly])
+  const toggle = (r: string) => setRoles(rs => rs.includes(r) ? (rs.length > 1 ? rs.filter(x => x !== r) : rs) : [...rs, r])
+  const go = async () => {
+    setBusy(true); setMsg(null)
+    try { const x = await backend.explain(ev.id, roles); setItems(i => [x, ...i]) }
+    catch (e) { setMsg({ kind: e instanceof ApiError && e.code === 'explainer_unavailable' ? 'warn' : 'err', text: `${(e as Error).message}` }) }
+    finally { setBusy(false) }
+  }
+  return (
+    <section className="explain" aria-labelledby="explain-h">
+      <h3 id="explain-h">Describe the evidence <span className="pill flag">optional, unverified</span></h3>
+      <p className="muted">A small open vision-language model describes the saved frames. It can be wrong and can invent details. It never changes the event, your review or the report.</p>
+      {readOnly ? <p className="notice info">Descriptions need the live backend and its model. The static demo does not run models.</p> : <>
+        <fieldset className="row" disabled={busy}><legend className="sr">Frames to use</legend>
+          {['start', 'mid', 'end'].map(r => <label key={r} className="check"><input type="checkbox" checked={roles.includes(r)} onChange={() => toggle(r)} /> {r}</label>)}
+          <button className="btn" onClick={go} disabled={busy}>{busy ? 'Describing...' : 'Describe selected frames'}</button>
+        </fieldset>
+        {roles.length > 1 && <p className="notice warn">Several frames at once make this model markedly less reliable. One frame is the default for that reason.</p>}
+        {msg && <div className={`notice ${msg.kind}`} role="status"><p>{msg.text}</p>{msg.kind === 'warn' && <p>Everything else, including keyword search and your review, still works.</p>}</div>}
+        {items.map(x => (
+          <figure key={x.id} className={`explanation ${x.status}`}>
+            <figcaption className="muted">Model-generated, unverified. {x.model.name}, {new Date(x.created_at).toLocaleString()}</figcaption>
+            <blockquote>{x.text}</blockquote>
+            <div className="frames small">{x.frames.map(f => (
+              <button key={f.role} className="frame" onClick={() => onSeek(f.t_ms)} aria-label={`${f.role} ${f.kind} at ${fmt(f.t_ms)}. Jump to this time.`}>
+                <img src={backend.evidenceUrl(ev, `${f.role}_original.jpg`)} alt={`${f.role} frame the description was based on`} loading="lazy" /><span>{f.kind === 'crop' ? 'crop of tracked object' : 'full frame'}, {fmt(f.t_ms)}</span></button>))}</div>
+            {x.flags.length > 0 ? <ul className="flags" aria-label="Automatic checks">{x.flags.map(f => <li key={f}><strong>{f.split(':')[0].replaceAll('_', ' ')}.</strong> {flagHelp(f)}{f.includes(':') ? <span className="muted"> ({f.split(':').slice(1).join(':').trim()})</span> : null}</li>)}</ul>
+              : <p className="muted">No automatic check fired. That is not a verification: the checks only catch some problems.</p>}
+          </figure>))}
+      </>}
     </section>
   )
 }

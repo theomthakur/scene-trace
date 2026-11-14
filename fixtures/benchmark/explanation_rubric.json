@@ -1,0 +1,165 @@
+{
+ "version": 1,
+ "corpus": "21 events (7 pedestrian_area, 14 rush_hour) from the benchmark clips; model SmolVLM-500M-Instruct revision 753c1752, greedy decoding, one mid-frame crop of the tracked box.",
+ "rubric": {
+  "mostly_supported": "every claim about the object is visible in the crop (small count or detail slips allowed)",
+  "mixed": "some claims visible, at least one clearly invented or wrong",
+  "mostly_unsupported": "most claims are invented or wrong",
+  "invented": "describes an object, person or detail that is not in the crop",
+  "states_uncertainty": "says that something cannot be seen clearly"
+ },
+ "annotation": {
+  "reviewers": 1,
+  "method": "Each text was compared with the exact crop the model saw (viewed on a contact sheet). The prompt wording was chosen after a pilot on 4 of these events (see docs), so those 4 are not an untouched test.",
+  "caveat": "One rater, 21 items: descriptive only."
+ },
+ "ratings": {
+  "97dc222a48ce": {
+   "verdict": "mostly_supported",
+   "invented": false,
+   "states_uncertainty": false,
+   "note": "blue top and a white bag match; says two bags, one is visible",
+   "rated_text_sha256": "50c46adeb53543feda925eaab4e29d743a8991044fdbd631776e690ffdfcd201"
+  },
+  "57f428aaf5b7": {
+   "verdict": "mostly_unsupported",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "invents hands on the ground and crossed arms; clothing description is confused",
+   "rated_text_sha256": "4893eb5491e80453616b55ec666dc1cd34504c3b24a36c637cddb48ce93da424"
+  },
+  "e82bdaf608c1": {
+   "verdict": "mostly_supported",
+   "invented": false,
+   "states_uncertainty": false,
+   "note": "older man with a bag or backpack on the shoulder matches",
+   "rated_text_sha256": "e520581abb99b12502099150b09b25425c5c73cfb41843e0b604294ffbd3e5b0"
+  },
+  "4b7cfe54a9d2": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "white bag matches; 'holding hands' is invented",
+   "rated_text_sha256": "73a4103f4d6072fd837c5b9543a98f0b2f70ca3182eba60bfc4af1c9b8c6c1ba"
+  },
+  "f81dbdf978a4": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "dark clothing matches; no white bag is visible",
+   "rated_text_sha256": "329b5bb4206b7c232ca89442839059bff36ac69497162df5c93b1b77038e4f1b"
+  },
+  "43b443b5cd7b": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "sunglasses, black shirt and trousers match; phone, wallet and white stripes are invented",
+   "rated_text_sha256": "bd0e1b31ea5c2375fdb0cc98dda13db329987b3fb7516c4891a0bf1b028e07ae"
+  },
+  "2fda9f732b35": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "black top and long hair match; cell phone is not visible",
+   "rated_text_sha256": "9a8b929e1aa18881ca381c7259fd3efcb18ea8a60ae42d5f0fded4cefde22eac"
+  },
+  "f4a84c625c8e": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "a pale car close-up is right; roof rack and bumper details are invented",
+   "rated_text_sha256": "9e8d260f294c90c74eac20c924fb61b7ebd56446fc0bf63a9236607c0e2a20b0"
+  },
+  "e165c9641045": {
+   "verdict": "mostly_unsupported",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "invents a person in the back seat and a red plate",
+   "rated_text_sha256": "34f8e97ec0a5bc2f998b39f769bd035d9fc56680f8ccb7ff8c00d93ddc4209ea"
+  },
+  "a46d3ff6103f": {
+   "verdict": "mostly_unsupported",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "invents a person with hands on the wheel",
+   "rated_text_sha256": "73fa0cae5b9e5f3fb54f8f5f4ed39dc7a418050d91f792b0b106a9a06bbcbd00"
+  },
+  "d916a30b7948": {
+   "verdict": "mostly_unsupported",
+   "invented": true,
+   "states_uncertainty": true,
+   "note": "invents an open hood and clothes; says some things cannot be seen clearly",
+   "rated_text_sha256": "51bc211bd8e771c9ade3cfa47c806fcdf3caddd2ac8ec730046e4e0fa99c042e"
+  },
+  "5b536c23ff80": {
+   "verdict": "mostly_unsupported",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "calls a silver van red and invents a person inside",
+   "rated_text_sha256": "3dcbb17a0caf6b2bac49b5428e131b76492bca89b8cba60023655ae6b747ef2b"
+  },
+  "20d0fd1c22b0": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "grey car plausible; invents a bag in the trunk",
+   "rated_text_sha256": "a476ee2deedd687217009a84f51b02b73b91ecf8c5cbf5c2d00625c0dd4d8169"
+  },
+  "c7ee7e6abb75": {
+   "verdict": "mixed",
+   "invented": false,
+   "states_uncertainty": false,
+   "note": "calls the silver van red; other details are generic",
+   "rated_text_sha256": "8ade9d3a233ac2b790f00e7f51902c91eac2ae7d71d4cd6884c2bc5e2ea72539"
+  },
+  "3f724575ce4e": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "white vehicle matches; invents a bag or suitcase on the back seat",
+   "rated_text_sha256": "5d06643e965d56c65c399ed727105a562dab09e3838ae015ce16acd49ca95988"
+  },
+  "87d08fd80c84": {
+   "verdict": "mostly_supported",
+   "invented": false,
+   "states_uncertainty": false,
+   "note": "red car, rear plate and traffic lights are right; 'parked' is wrong (queueing). The plate text is an identifier and is redacted",
+   "rated_text_sha256": "beac06ed7ee9ac7802547290b968e67120595a93adf8467f4b19ccb4e0ffc138"
+  },
+  "68cfc5afccd3": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "red rear lights match; roof lights and parking lot are invented",
+   "rated_text_sha256": "008b1f2c0542880c63911e10e633f95036b0b20390fd58a542c1adb0d9fddb1d"
+  },
+  "e885435d9e3b": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "a person at the window exists; sunglasses and position are invented",
+   "rated_text_sha256": "a0a4f42e4ec05007e05c821ade5ca406f7c20721e7edea69524c81dd7e219f0e"
+  },
+  "4808d1a83773": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "red rear lights match; roof lights and parking lot are invented",
+   "rated_text_sha256": "2e6b061d2c545ed8584dc7c7324b749e34a407851be82b5173f954a66c5f91f3"
+  },
+  "ff8c5c7df67a": {
+   "verdict": "mostly_unsupported",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "invents a parking lot and a red traffic light",
+   "rated_text_sha256": "c3eabc660215db629145bba4df33da26eb5f472f3394a3b7ed98772b0804b6d1"
+  },
+  "593c2d614ead": {
+   "verdict": "mixed",
+   "invented": true,
+   "states_uncertainty": false,
+   "note": "a dark vehicle matches; the red roof light is invented",
+   "rated_text_sha256": "d7a3b2dc4f37ee1de57ac60ab4fe27ec21f24a322c612b71ca43bd318736b2ce"
+  }
+ }
+}

@@ -125,3 +125,20 @@ class Review(Base):
     note: Mapped[str] = mapped_column(Text, default="")
     revision: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(default=now)
+
+
+class Explanation(Base):
+    """Optional model-generated description of an event's evidence. Advisory: it never alters an event, a review or a report count."""
+    __tablename__ = "explanations"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    event_id: Mapped[str] = mapped_column(ForeignKey("events.id"), index=True)
+    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"))
+    status: Mapped[str] = mapped_column(String(10))            # ok | flagged
+    text: Mapped[str] = mapped_column(Text)
+    flags: Mapped[list] = mapped_column(JSON)
+    frames: Mapped[list] = mapped_column(JSON)
+    labels: Mapped[list] = mapped_column(JSON)
+    prompt: Mapped[str] = mapped_column(Text)
+    prompt_sha256: Mapped[str] = mapped_column(String(64))
+    model: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(default=now)

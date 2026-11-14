@@ -68,7 +68,13 @@ def _m1(conn):
     Base.metadata.create_all(conn)
 
 
-MIGRATIONS: list[tuple[int, Callable]] = [(1, _m1)]
+def _m2(conn):
+    """Explanations table (optional video-language descriptions)."""
+    from .models import Explanation
+    Explanation.__table__.create(conn, checkfirst=True)
+
+
+MIGRATIONS: list[tuple[int, Callable]] = [(1, _m1), (2, _m2)]
 
 
 def migrate(engine: Engine) -> int:

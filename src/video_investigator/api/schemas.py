@@ -39,3 +39,7 @@ class SemanticSearchBody(BaseModel):
     filters: dict = Field(default_factory=dict)
     limit: int | None = Field(default=None, ge=1)
     min_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
+
+
+class ExplainBody(BaseModel):
+    frames: list[Literal["start", "mid", "end"]] = Field(default_factory=lambda: ["mid"], min_length=1, max_length=3)

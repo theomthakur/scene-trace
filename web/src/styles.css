@@ -186,3 +186,9 @@ select { padding-right:38px }
 .segmented label:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: -3px }
 .pill.sem { background: var(--info-bg); color: var(--accent) }
 .ev-sem { flex-basis: 100%; font-size: 12px }
+
+.explain { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 4px }
+.explanation { margin: 10px 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfd }
+.explanation.flagged { border-color: var(--warn) }
+.explanation blockquote { margin: 6px 0; padding-left: 10px; border-left: 3px solid #b9c4d8; font-size: 14px }
+.frames.small { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) }

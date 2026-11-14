@@ -19,6 +19,7 @@ from ..paths import data_dir, evaluations_dir, runs_dir, uploads_tmp, videos_dir
 from ..reports import export
 from ..search import engine as search_engine
 from ..search import semantic
+from ..explain import vlm
 from ..worker import store
 from . import schemas
 from .errors import ApiError, install
@@ -493,6 +494,57 @@ def create_app() -> FastAPI:
                 results.append({**e, "semantic": {"similarity": h["similarity"], "rank": h["rank"], "best_item": {**b, "frame_url": f"{e['evidence_base']}{b['role']}_original.jpg"},
                                                   "model": meta["model"]["name"], "index_built_at": meta["built_at"]}})
             return {**base, "results": results, "unsupported": False, "notices": [], "candidates_after_structured_filter": len(pool), "model": meta["model"], "source": embedder.source}
+
+    # ---------- optional video-language explanations (advisory; the core app never depends on them) ----------
+    def get_explainer():
+        if os.environ.get("VI_EXPLAIN", "on").lower() == "off":
+            raise ApiError(503, "explainer_unavailable", "Explanations are switched off on this server (VI_EXPLAIN=off). Everything else works.")
+        ex = getattr(app.state, "explainer", None)
+        if ex is not None:
+            return ex
+        try:
+            app.state.explainer = vlm.default_explainer()
+            return app.state.explainer
+        except vlm.ExplainerUnavailable as e:
+            raise ApiError(503, "explainer_unavailable", f"{e.message} Everything else works.")
+
+    def explanation_out(x: m.Explanation, event: m.Event) -> dict:
+        return {"id": x.id, "event_id": x.event_id, "status": x.status, "text": x.text, "flags": x.flags, "model": x.model, "created_at": x.created_at.isoformat() + "Z",
+                "prompt_sha256": x.prompt_sha256, "prompt": x.prompt, "disclaimer": vlm.DISCLAIMER,
+                "frames": [{**f, "frame_url": f"/api/runs/{event.run_id}/evidence/{event.event_key}/{f['role']}_original.jpg"} for f in x.frames]}
+
+    @app.get("/api/explainer")
+    def explainer_status():
+        off = os.environ.get("VI_EXPLAIN", "on").lower() == "off"
+        ex = getattr(app.state, "explainer", None)
+        return {"enabled": not off, "model_loaded": ex is not None, "model": {"name": vlm.SmolVlmExplainer.name, "revision": vlm.SmolVlmExplainer.revision, "license": "apache-2.0"},
+                "disclaimer": vlm.DISCLAIMER}
+
+    @app.post("/api/events/{event_id}/explain", status_code=201)
+    def explain_event(event_id: str, body: schemas.ExplainBody):
+        with session_scope(F()) as s:
+            e = get_or_404(s, m.Event, event_id, "event"); r = s.get(m.Run, e.run_id)
+            if r.state != "completed" or not r.manifest_rel:
+                raise ApiError(409, "invalid_state", "Explanations need a completed run.", state=r.state)
+            explainer = get_explainer()
+            attempt = (data_dir() / r.manifest_rel).parent
+            obs = [json.loads(x) for x in (attempt / "observations.jsonl").read_text().splitlines()]
+            ev = {"type": e.type, "class_name": e.class_name, "start_ms": e.start_ms, "end_ms": e.end_ms, "track_ids": e.track_ids, "evidence": e.evidence}
+            try:
+                res = vlm.explain(attempt, ev, obs, explainer, tuple(body.frames))
+            except vlm.ExplainerUnavailable as ex:
+                raise ApiError(409, "no_evidence", ex.message)
+            x = m.Explanation(event_id=e.id, run_id=e.run_id, status=res["status"], text=res["text"], flags=res["flags"], frames=res["frames"], labels=res["labels"], prompt=res["prompt"],
+                              prompt_sha256=res["prompt_sha256"], model=res["model"])
+            s.add(x); s.flush()
+            return explanation_out(x, e)
+
+    @app.get("/api/events/{event_id}/explanations")
+    def list_explanations(event_id: str):
+        with session_scope(F()) as s:
+            e = get_or_404(s, m.Event, event_id, "event")
+            xs = s.scalars(select(m.Explanation).where(m.Explanation.event_id == e.id).order_by(m.Explanation.created_at.desc()))
+            return {"event_id": e.id, "explanations": [explanation_out(x, e) for x in xs], "disclaimer": vlm.DISCLAIMER}
 
     # ---------- review ----------
     @app.put("/api/events/{event_id}/review")

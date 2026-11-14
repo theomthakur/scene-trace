@@ -32,7 +32,7 @@ export type SemanticHit = EventT & { semantic: SemanticInfo }
 export interface SemanticResult { results: SemanticHit[]; unsupported: boolean; notices: string[]; score_meaning: string; ordering: string; structured_constraints_applied: { classes: string[]; event_types: string[]; zone_ids: string[] }; candidates_after_structured_filter?: number; model?: { name: string }; source?: string }
 export interface ExplanationT {
   id: string; event_id: string; status: 'ok' | 'flagged'; text: string; model: { name: string; revision: string; source: string }; created_at: string
-  frames: { role: string; t_ms: number; frame_url: string }[]; prompt_sha256: string; flags: string[]; disclaimer: string
+  frames: { role: string; t_ms: number; kind: string; frame_url: string }[]; prompt_sha256: string; flags: string[]; disclaimer: string
 }
 
 export class ApiError extends Error {
@@ -65,6 +65,8 @@ export interface Backend {
   events(runId: string): Promise<{ events: EventT[]; complete: boolean; quality_flags: string[]; note: string | null }>
   search(runId: string, query: string, filters: Record<string, unknown>): Promise<SearchResult>
   semanticSearch(runId: string, query: string, filters: Record<string, unknown>): Promise<SemanticResult>
+  explain(eventId: string, frames: string[]): Promise<ExplanationT>
+  explanations(eventId: string): Promise<ExplanationT[]>
   review(eventId: string, verdict: string, note: string, expected: number): Promise<EventT>
   evidenceUrl(ev: EventT, name: string): string
   reportUrl(runId: string, format: 'json' | 'markdown' | 'html'): string
@@ -105,6 +107,8 @@ export const liveBackend: Backend = {
   events: async runId => j(await fetch(`${API_BASE}/api/runs/${runId}/events?limit=500`)),
   search: async (runId, query, filters) => j(await fetch(`${API_BASE}/api/runs/${runId}/search`, jsonInit('POST', { query, filters }))),
   semanticSearch: async (runId, query, filters) => j(await fetch(`${API_BASE}/api/runs/${runId}/search/semantic`, jsonInit('POST', { query, filters }))),
+  explain: async (id, frames) => j(await fetch(`${API_BASE}/api/events/${id}/explain`, jsonInit('POST', { frames }))),
+  explanations: async id => (await j<{ explanations: ExplanationT[] }>(await fetch(`${API_BASE}/api/events/${id}/explanations`))).explanations,
   review: async (id, verdict, note, expected_version) => j(await fetch(`${API_BASE}/api/events/${id}/review`, jsonInit('PUT', { verdict, note, expected_version }))),
   evidenceUrl: (ev, name) => `${API_BASE}${ev.evidence_base}${name}`,
   reportUrl: (runId, format) => `${API_BASE}/api/runs/${runId}/report?format=${format}`,
