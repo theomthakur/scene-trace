@@ -1,0 +1,172 @@
+{
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "lane": {
+    "baseline_no_persistence": {
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 12,
+          "negative_hours": 0.00533,
+          "undefined_reason": null,
+          "value": 2249.9999999999995
+        },
+        "false_positives": 12,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": 0.0,
+        "onset_matched_count": 11,
+        "precision": {
+          "denominator": 23,
+          "numerator": 11,
+          "undefined_reason": null,
+          "value": 0.4782608695652174
+        },
+        "recall": {
+          "denominator": 11,
+          "numerator": 11,
+          "undefined_reason": null,
+          "value": 1.0
+        },
+        "true_positives": 11
+      }
+    },
+    "metrics": {
+      "false_alerts_per_negative_video_hour": {
+        "false_alerts": 0,
+        "negative_hours": 0.00533,
+        "undefined_reason": null,
+        "value": 0.0
+      },
+      "false_positives": 0,
+      "missed_events": 0,
+      "onset_abs_error_ms_mean": 0.0,
+      "onset_matched_count": 11,
+      "precision": {
+        "denominator": 11,
+        "numerator": 11,
+        "undefined_reason": null,
+        "value": 1.0
+      },
+      "recall": {
+        "denominator": 11,
+        "numerator": 11,
+        "undefined_reason": null,
+        "value": 1.0
+      },
+      "true_positives": 11
+    },
+    "notes": [
+      "Fixture lane only: scripted observations, tagged source=fixture."
+    ],
+    "per_clip": [
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 0,
+        "purpose": "empty input yields no events",
+        "scenario": "empty",
+        "tp": 0,
+        "truth": 0
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 1,
+        "purpose": "one entry, one event, no repeat per frame",
+        "scenario": "clear_entry",
+        "tp": 1,
+        "truth": 1
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 0,
+        "purpose": "crossing under the 1.0 s dwell is suppressed",
+        "scenario": "brief_crossing",
+        "tp": 0,
+        "truth": 0
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 1,
+        "purpose": "boundary points count as inside",
+        "scenario": "boundary_grazing",
+        "tp": 1,
+        "truth": 1
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 0,
+        "purpose": "alternating boundary noise does not create an event",
+        "scenario": "flicker",
+        "tp": 0,
+        "truth": 0
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 2,
+        "purpose": "a gap longer than 0.4 s splits the occupancy and missed time does not count as dwell",
+        "scenario": "occlusion_gap",
+        "tp": 2,
+        "truth": 2
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 1,
+        "purpose": "stationary candidate for a supported object; people excluded",
+        "scenario": "stationary_object",
+        "tp": 1,
+        "truth": 1
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 1,
+        "purpose": "small jitter does not reset the window",
+        "scenario": "stationary_jitter",
+        "tp": 1,
+        "truth": 1
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 2,
+        "purpose": "one interval can satisfy two rules; both are kept as separate events",
+        "scenario": "overlapping_rules",
+        "tp": 2,
+        "truth": 2
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 1,
+        "purpose": "dwell is measured in seconds, not frames",
+        "scenario": "frame_rate_10fps",
+        "tp": 1,
+        "truth": 1
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 0,
+        "purpose": "tentative tracks never produce events",
+        "scenario": "tentative_only",
+        "tp": 0,
+        "truth": 0
+      },
+      {
+        "fn": 0,
+        "fp": 0,
+        "predicted": 2,
+        "purpose": "events are not merged across different track IDs",
+        "scenario": "two_tracks_no_merge",
+        "tp": 2,
+        "truth": 2
+      }
+    ],
+    "scope": "12 generated scenarios with deterministic ground truth. Tests the temporal rules WITHOUT a detector; these numbers say nothing about real video.",
+    "status": "evaluated"
+  }
+}

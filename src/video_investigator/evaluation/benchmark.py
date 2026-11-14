@@ -132,13 +132,13 @@ def git_commit() -> str:
 
 
 def run_evaluation(include_test: bool, with_sweep: bool = True) -> dict:
+    if include_test and TEST_RESULT.exists():
+        raise SystemExit(f"The frozen test split was already evaluated ({TEST_RESULT}). It must not be re-run or tuned against.")
     settings = load_settings(); manifest = load_manifest()
     detector = Detector(settings)
     t0 = time.time()
     lanes = {"fixture": fixture_lane(settings), "development": real_lane(manifest, "development", settings, detector)}
     if include_test:
-        if TEST_RESULT.exists():
-            raise SystemExit(f"The frozen test split was already evaluated ({TEST_RESULT}). It must not be re-run or tuned against.")
         lanes["test"] = real_lane(manifest, "test", settings, detector)
     else:
         lanes["test"] = {"status": "not_evaluated", "reason": "The frozen test split has not been run yet. It is run once with --include-test after the configuration is frozen."}

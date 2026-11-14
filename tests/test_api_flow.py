@@ -223,3 +223,14 @@ def test_cancel_running_run_stops_between_frames_and_leaves_no_manifest(client, 
     assert not (attempt / "manifest.json").exists()                                      # partial work is never published as complete
     assert next((data_dir / "videos" / v["id"]).glob("original.*")).exists()             # the original survives
     assert client.get(f"/api/runs/{run['id']}/events").json()["complete"] is False
+
+
+def test_video_without_usable_timing_blocks_run_creation_with_an_actionable_code(client, tmp_path):
+    from video_investigator.db import models as m
+    from video_investigator.db.session import session_scope
+    v = upload(client, tmp_path)
+    client.put(f"/api/videos/{v['id']}/zones", json=ZONE)
+    with session_scope(client.app.state.factory) as s:
+        row = s.get(m.Video, v["id"]); row.meta = {**row.meta, "timestamps_ok": False}
+    r = client.post("/api/runs", json={"video_id": v["id"]})
+    assert r.status_code == 422 and r.json()["error"]["code"] == "unsupported_timing" and "timing" in r.json()["error"]["message"]

@@ -89,6 +89,7 @@ def cmd_evaluate(args) -> int:
 def cmd_export_demo(args) -> int:
     """Copy one completed run (observations, events, evidence, playable video) into web/public/demo for the static demo mode."""
     import shutil
+    from datetime import datetime, timezone
     from sqlalchemy import select
     from .api import app as api_app
     from .db import models as m
@@ -121,7 +122,7 @@ def cmd_export_demo(args) -> int:
                 shutil.copytree(src, ev_dir / e.event_key, dirs_exist_ok=True)
         evals = {p.stem: json.loads(p.read_text()) for p in evaluations_dir().glob("*.json")}
         index = {"name": v.display_name, "video": video, "run": run_d, "zones": run.zones, "events": ev_out, "observations": obs, "evaluations": evals,
-                 "generated_at": datetime.now(timezone.utc).isoformat() if (datetime := __import__("datetime").datetime) else "", "note": "Precomputed static demo. No model runs in this mode."}
+                 "generated_at": datetime.now(timezone.utc).isoformat(), "note": "Precomputed static demo. No model runs in this mode."}
     (out / "index.json").write_text(json.dumps(index))
     print(f"exported run {run.id} ({len(ev_out)} events, {len(obs)} observations) to {out}")
     return 0
