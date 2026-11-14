@@ -1,0 +1,21 @@
+{
+  "frozen_at": "2026-11-14T18:05:04Z",
+  "checkpoint_sha256": "ed84da3725ed1ee0512b34bd024c751422b9fadc6b9f9ca39464573e3d8af745",
+  "config": {
+    "epochs": 6,
+    "batch": 8,
+    "lr": 0.005,
+    "momentum": 0.9,
+    "weight_decay": 0.0005,
+    "seed": 7,
+    "freeze_backbone": false,
+    "score_thresh": 0.05,
+    "iou_thr": 0.5,
+    "image_size": 416
+  },
+  "split_files_sha256": "acf98f6ab6b11aeef000b0b40af247bdbbf2c3e7b29a015ce9e6b9d08ead3af4",
+  "selected_epoch": 6,
+  "val_map50_at_selection": 0.4318,
+  "code_commit": "1c2c9d6369916586c73616bb1d26ef415dec7a01",
+  "note": "Recorded after training and before the test split is evaluated. The test split is evaluated once; a second run is refused."
+}
