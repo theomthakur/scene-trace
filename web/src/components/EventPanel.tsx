@@ -164,9 +164,9 @@ export function ExplainPanel({ ev, backend, onSeek, readOnly }: { ev: EventT; ba
     finally { setBusy(false) }
   }
   return (
-    <section className="explain" aria-labelledby="explain-h">
-      <h3 id="explain-h">Describe the evidence <span className="pill flag">optional, unverified</span></h3>
-      <p className="muted">A small open vision-language model describes the saved frames. It can be wrong and can invent details. It never changes the event, your review or the report.</p>
+    <details className="explain experimental">
+      <summary><span id="explain-h">Experimental: describe the evidence with a small model</span> <span className="pill flag">unreliable, optional</span></summary>
+      <p className="muted">In our own check, most descriptions mixed real and invented details (3 of 21 were mostly supported by the frame). Use the frames and the event rule above as the evidence. A description never changes the event, your review or the report.</p>
       {readOnly ? <p className="notice info">Descriptions need the live backend and its model. The static demo does not run models.</p> : <>
         <fieldset className="row" disabled={busy}><legend className="sr">Frames to use</legend>
           {['start', 'mid', 'end'].map(r => <label key={r} className="check"><input type="checkbox" checked={roles.includes(r)} onChange={() => toggle(r)} /> {r}</label>)}
@@ -185,6 +185,6 @@ export function ExplainPanel({ ev, backend, onSeek, readOnly }: { ev: EventT; ba
               : <p className="muted">No automatic check fired. That is not a verification: the checks only catch some problems.</p>}
           </figure>))}
       </>}
-    </section>
+    </details>
   )
 }

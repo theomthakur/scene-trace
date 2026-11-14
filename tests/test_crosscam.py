@@ -75,7 +75,8 @@ def test_synthetic_scenarios_degrade_with_noise_and_are_deterministic():
 
 
 # ---------------- API ----------------
-def test_crosscam_endpoint_requires_two_runs_an_offset_and_returns_labelled_candidates(client, tmp_path):
+def test_crosscam_endpoint_requires_two_runs_an_offset_and_returns_labelled_candidates(client, tmp_path, monkeypatch):
+    monkeypatch.setenv("VI_EXPERIMENTAL_CROSSCAM", "on")
     from helpers import make_video
     from test_api_flow import make_run, run_with_fixture, upload
     from test_semantic import FixtureEmbedder
@@ -94,3 +95,8 @@ def test_crosscam_endpoint_requires_two_runs_an_offset_and_returns_labelled_cand
     assert client.post("/api/crosscam/associate", json={"run_a": ids[0], "run_b": ids[0], "offset_b_s": 5}).json()["error"]["code"] == "same_run"
     assert client.post("/api/crosscam/associate", json={"run_a": ids[0], "run_b": "nope", "offset_b_s": 5}).status_code == 404
     assert client.post("/api/crosscam/associate", json={"run_a": ids[0], "run_b": ids[1], "offset_b_s": 30, "class_name": "car"}).json()["tracks_considered"] == {"run_a": 0, "run_b": 0}
+
+
+def test_crosscam_is_off_by_default_because_it_is_unvalidated(client):
+    r = client.post("/api/crosscam/associate", json={"run_a": "a", "run_b": "b", "offset_b_s": 5})
+    assert r.status_code == 404 and r.json()["error"]["code"] == "experimental_disabled" and "unvalidated" in r.json()["error"]["message"]

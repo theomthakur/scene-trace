@@ -1,0 +1,6 @@
+{
+  "frozen_at": "2026-11-14T22:52:15.811990+00:00",
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "manifest_sha256": "3bb5e737d0c280c494604a6042b8b43df4113fedcf8a03ccb5a62ec5ac094486",
+  "note": "Recorded before the detector ran on any test-3 recording. No detection, tracking or event-rule changes were made in this batch: the configuration is byte-for-byte the one used for the earlier frozen tests (same config hash). test-3 is evaluated once; a second run is refused."
+}

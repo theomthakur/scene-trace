@@ -45,3 +45,19 @@ def person_in_zone_script(first=3, last=18):
             return [Detection(1, "person", 0.93, (0.45, 0.50, 0.55, 0.90))]
         return []
     return script
+
+
+def make_quadrant_video(path: Path, seconds: float = 2.0, fps: int = 25, size=(320, 180)) -> Path:
+    """Four large distinct colour quadrants (red top-left, green top-right, blue bottom-left, white bottom-right): any wrong orientation is obvious."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    w, h = size
+    img = np.zeros((h, w, 3), np.uint8)
+    img[: h // 2, : w // 2] = (220, 30, 30); img[: h // 2, w // 2:] = (30, 200, 30); img[h // 2:, : w // 2] = (30, 30, 220); img[h // 2:, w // 2:] = (240, 240, 240)
+    with av.open(str(path), "w") as c:
+        s = c.add_stream("libx264", rate=fps); s.width, s.height, s.pix_fmt = w, h, "yuv420p"
+        for _ in range(int(seconds * fps)):
+            for p_ in s.encode(av.VideoFrame.from_ndarray(img, format="rgb24")):
+                c.mux(p_)
+        for p_ in s.encode():
+            c.mux(p_)
+    return path

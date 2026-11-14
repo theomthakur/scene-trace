@@ -97,6 +97,17 @@ def cmd_evaluate_expansion(args) -> int:
     return 0
 
 
+def cmd_evaluate_reliability(args) -> int:
+    from .evaluation import benchmark as b
+    rep = b.run_reliability(include_test3=args.include_test3)
+    b.EVIDENCE.mkdir(parents=True, exist_ok=True)
+    (b.EVIDENCE / "benchmark-reliability.json").write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
+    if args.include_test3:
+        b.TEST3_RESULT.write_text(json.dumps({"lane": rep["lanes"]["test_3"], "config_hash": rep["config_hash"], "generated_at": rep["generated_at"]}, indent=2, sort_keys=True, default=float) + "\n")
+    print(json.dumps({"sample_counts": rep["sample_counts"], "lanes": {k: {kk: vv for kk, vv in v.items() if kk in ("metrics", "audit", "status")} for k, v in rep["lanes"].items()}}, indent=2, default=str)[:4000])
+    return 0
+
+
 def cmd_export_demo(args) -> int:
     """Copy one completed run (observations, events, evidence, playable video) into web/public/demo for the static demo mode."""
     import shutil
@@ -156,6 +167,8 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--include-test", action="store_true"); e.add_argument("--no-sweep", action="store_true"); e.set_defaults(fn=cmd_evaluate)
     ex = sub.add_parser("evaluate-expansion", help="evaluate the additional recordings (second development set; second test set once, with --include-test2)")
     ex.add_argument("--include-test2", action="store_true"); ex.set_defaults(fn=cmd_evaluate_expansion)
+    rl = sub.add_parser("evaluate-reliability", help="third batch: negatives and audited units; test-3 once, with --include-test3")
+    rl.add_argument("--include-test3", action="store_true"); rl.set_defaults(fn=cmd_evaluate_reliability)
     x = sub.add_parser("export-demo", help="export a completed run for the static demo mode")
     x.add_argument("--run-id"); x.add_argument("--out", default="web/public/demo"); x.add_argument("--skip-clips", action="store_true", help="leave out the per-event video clips (smaller bundle)")
     x.set_defaults(fn=cmd_export_demo)

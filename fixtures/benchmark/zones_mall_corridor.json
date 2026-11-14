@@ -1,0 +1,25 @@
+[
+ {
+  "id": "z-balcony",
+  "name": "Balcony wall (people)",
+  "role": "restricted",
+  "polygon": [
+   [
+    0.74,
+    0.3
+   ],
+   [
+    0.98,
+    0.3
+   ],
+   [
+    0.98,
+    0.62
+   ],
+   [
+    0.74,
+    0.62
+   ]
+  ]
+ }
+]

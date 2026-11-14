@@ -197,3 +197,6 @@ select { padding-right:38px }
 .table-scroll table { margin: 0; min-width: 100% }
 .table-scroll th, .table-scroll td { overflow-wrap: anywhere }
 .table-scroll:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px }
+
+.explain.experimental > summary { cursor: pointer; font-weight: 600; min-height: 40px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.explain.experimental[open] > summary { margin-bottom: 6px }

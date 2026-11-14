@@ -1,0 +1,121 @@
+{
+ "version": 1,
+ "note": "Third batch, aimed at reliability evidence in conditions the earlier sets lacked: busy indoor scenes, small people, glass and reflections, indoor lighting. dev-3 may inform choices (none were made); test-3 is frozen separately (FREEZE-3.json) and evaluated once.",
+ "annotation": {
+  "method": "Negative units: zones judged empty from raw decoded frames (every 1 to 5 s) with only the zone outline drawn. 'Audit' units: no ground-truth events were annotated, because shoppers' feet sit at zone boundaries and several people overlap; instead EVERY event the system raised was reviewed against its own saved evidence frames and labelled supported, unsupported or ambiguous (fixtures/benchmark/audit_labels.json). Recall is NOT measured for audit units.",
+  "reviewers": 1,
+  "reviewer_note": "One reviewer (the implementing assistant), not expert consensus. Audit labels are written after the system's predictions exist; they cannot change them.",
+  "temporal_match": "n/a for negatives and audit units"
+ },
+ "limits": [
+  "No positive events are annotated in this batch: recall is unmeasured here.",
+  "Audit precision depends on one reviewer's reading of the evidence frames; ambiguous cases are reported separately rather than forced into a class.",
+  "Three recordings, about 2.3 minutes in total. Each recording is a single scene: this says nothing about other buildings, cameras or lighting."
+ ],
+ "sources": [
+  {
+   "id": "mall_corridor",
+   "file": "027_Christmas_shopping_Centre_in_Ljubljana_webm.webm",
+   "sha1": "9bf975754fd44b3b49edb42e01e83c472ecb234a",
+   "scene_id": "ljubljana-mall-corridor",
+   "split": "development-3",
+   "license": "CC BY 3.0",
+   "license_url": "https://creativecommons.org/licenses/by/3.0",
+   "author": "\nbarbara.grilc; Sound recording: Du\u0161an Oblak, Video recording: Barbara Rezar Grilc, Photo: Irena Maru\u0161i\u010d",
+   "source_page": "https://commons.wikimedia.org/wiki/File:Christmas_shopping_Centre_in_Ljubljana.webm",
+   "duration_ms": 61796,
+   "zones": "zones_mall_corridor.json",
+   "acquired": "2026-11-14 via Wikimedia Commons API, SHA-1 verified",
+   "fixed_camera_check": "median phase-correlation shift under 1 px (scripts/check_fixed_camera.py)",
+   "condition": "busy indoor corridor, 50 fps, many small people",
+   "units": [
+    {
+     "id": "d3-balcony-negative",
+     "types": [
+      "zone_entry"
+     ],
+     "zones": [
+      "z-balcony"
+     ],
+     "truth": [],
+     "note": "the balcony wall: people walk in the corridor below, never on the wall"
+    }
+   ]
+  },
+  {
+   "id": "entrance",
+   "file": "026_Christmas_Shopping_Centre_in_Ljubljana_Christmas_shopping_tr.webm",
+   "sha1": "817c7f9ecdf5370fc19439826cb569cf5c090ce2",
+   "scene_id": "ljubljana-interspar-entrance",
+   "split": "test-3",
+   "license": "CC BY 3.0",
+   "license_url": "https://creativecommons.org/licenses/by/3.0",
+   "author": "\nbarbara.grilc; Sound recording: Du\u0161an Oblak, Video recording: Barbara Rezar Grilc, Photo: Irena Maru\u0161i\u010d",
+   "source_page": "https://commons.wikimedia.org/wiki/File:Christmas_Shopping_Centre_in_Ljubljana;_Christmas_-_shopping_trollies_part_2.webm",
+   "duration_ms": 62353,
+   "zones": "zones_entrance.json",
+   "acquired": "2026-11-14 via Wikimedia Commons API, SHA-1 verified",
+   "fixed_camera_check": "median phase-correlation shift under 1 px (scripts/check_fixed_camera.py)",
+   "condition": "indoor entrance, low light, people at 100 to 200 px, 50 fps",
+   "units": [
+    {
+     "id": "t3-floor-negative",
+     "types": [
+      "zone_entry"
+     ],
+     "zones": [
+      "z-floor"
+     ],
+     "truth": [],
+     "note": "the tiled floor in the foreground: nobody walks there in 62 s"
+    },
+    {
+     "id": "t3-walkway-audit",
+     "types": [
+      "zone_entry"
+     ],
+     "zones": [
+      "z-walkway"
+     ],
+     "truth": [],
+     "audit": true,
+     "note": "shoppers and a cart collector walk through this band; events are audited, not scored against annotations"
+    }
+   ]
+  },
+  {
+   "id": "platform",
+   "file": "118_Train_Enters_Ben_Gurion_Light_Rail_Station_Platform_1_webm.webm",
+   "sha1": "84db59fcac763bc3ad6a50ca57baf12abbcda36a",
+   "scene_id": "israel-light-rail-platform",
+   "split": "test-3",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "author": "Assaf Yekuel",
+   "source_page": "https://commons.wikimedia.org/wiki/File:Train_Enters_Ben_Gurion_Light_Rail_Station_Platform_1.webm",
+   "duration_ms": 13507,
+   "zones": "zones_platform.json",
+   "acquired": "2026-11-14 via Wikimedia Commons API, SHA-1 verified",
+   "fixed_camera_check": "median phase-correlation shift under 1 px (scripts/check_fixed_camera.py)",
+   "condition": "glass doors, reflections, passengers behind glass",
+   "units": [
+    {
+     "id": "t3-platform-negative",
+     "types": [
+      "zone_entry"
+     ],
+     "zones": [
+      "z-platform"
+     ],
+     "truth": [],
+     "note": "empty platform floor in front of glass screen doors; passengers are visible only through the train windows"
+    }
+   ]
+  }
+ ],
+ "not_annotated": [
+  "every positive event",
+  "detection boxes",
+  "tracks"
+ ]
+}

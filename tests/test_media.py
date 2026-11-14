@@ -85,3 +85,24 @@ def test_limits_are_enforced_with_codes(tmp_path):
     with pytest.raises(MediaError) as e:
         validate_limits(info, max_bytes=10**9, max_seconds=1)
     assert e.value.code == "too_long"
+
+
+@pytest.mark.parametrize("rotation", [90, 180, 270])
+def test_oriented_frames_match_the_browser_playable_derivative_at_every_rotation(tmp_path, rotation):
+    """Overlays are drawn on frames decoded and oriented here, but the browser plays an ffmpeg-made derivative. Both must show the same upright picture, or boxes would
+    land in the wrong place for phone footage. Checked on a real-content-like asymmetric clip; a wrongly rotated copy differs by an order of magnitude more."""
+    import cv2
+    from helpers import make_quadrant_video
+    from video_investigator.reports.evidence import frames_at, make_playable_derivative
+    base = make_quadrant_video(tmp_path / "base.mp4")
+    rot = tmp_path / f"rot{rotation}.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-display_rotation", str(rotation), "-i", str(base), "-c", "copy", str(rot)], check=True)
+    info = probe(rot)
+    der = tmp_path / "der.mp4"; make_playable_derivative(rot, der)
+    mine, _ = frames_at(rot, info, [1000])[1000]
+    cap = cv2.VideoCapture(str(der)); cap.set(cv2.CAP_PROP_POS_MSEC, 1000); ok, fr = cap.read(); assert ok
+    theirs = cv2.resize(cv2.cvtColor(fr, cv2.COLOR_BGR2RGB), (mine.shape[1], mine.shape[0]))
+    diff = np.abs(mine.astype(float) - theirs.astype(float)).mean()
+    assert diff < 8.0, f"oriented frame and playable derivative disagree (mean abs diff {diff:.1f}) at rotation {rotation}"
+    wrong = np.fliplr(theirs)                                                                   # a mirrored picture: red and green quadrants swap
+    assert np.abs(mine.astype(float) - wrong.astype(float)).mean() > 5 * max(diff, 1.0)            # the test can tell a wrong orientation apart

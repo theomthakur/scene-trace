@@ -557,6 +557,9 @@ def create_app() -> FastAPI:
 
     @app.post("/api/crosscam/associate")
     def crosscam(body: schemas.CrossCamBody):
+        # Unvalidated feature: off unless the operator opts in. Its accuracy is not established (see docs/evidence/crosscam-eval.json).
+        if os.environ.get("VI_EXPERIMENTAL_CROSSCAM", "off").lower() not in ("on", "1", "true"):
+            raise ApiError(404, "experimental_disabled", "Cross-camera association is an experimental, unvalidated feature and is switched off. Set VI_EXPERIMENTAL_CROSSCAM=on to enable it.")
         if body.run_a == body.run_b:
             raise ApiError(422, "same_run", "Cross-camera association needs two different runs (two cameras).")
         with session_scope(F()) as s:

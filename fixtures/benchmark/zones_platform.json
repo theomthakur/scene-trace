@@ -1,0 +1,25 @@
+[
+ {
+  "id": "z-platform",
+  "name": "Platform floor (people)",
+  "role": "restricted",
+  "polygon": [
+   [
+    0.02,
+    0.62
+   ],
+   [
+    0.98,
+    0.62
+   ],
+   [
+    0.98,
+    0.99
+   ],
+   [
+    0.02,
+    0.99
+   ]
+  ]
+ }
+]

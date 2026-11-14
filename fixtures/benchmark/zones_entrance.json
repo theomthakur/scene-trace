@@ -1,0 +1,48 @@
+[
+ {
+  "id": "z-floor",
+  "name": "Empty floor strip (people)",
+  "role": "restricted",
+  "polygon": [
+   [
+    0.05,
+    0.72
+   ],
+   [
+    0.95,
+    0.72
+   ],
+   [
+    0.95,
+    0.98
+   ],
+   [
+    0.05,
+    0.98
+   ]
+  ]
+ },
+ {
+  "id": "z-walkway",
+  "name": "Cart corral walkway (people)",
+  "role": "restricted",
+  "polygon": [
+   [
+    0.02,
+    0.4
+   ],
+   [
+    0.98,
+    0.4
+   ],
+   [
+    0.98,
+    0.66
+   ],
+   [
+    0.02,
+    0.66
+   ]
+  ]
+ }
+]
