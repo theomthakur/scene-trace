@@ -53,3 +53,10 @@ python -m video_investigator.cli evaluate-reliability --include-test3   # refuse
 python -m video_investigator.cli audit-refresh                 # recompute audit from labels only
 python scripts/robustness_sweep.py
 ```
+
+## Checks run for this batch (14 Nov 2026, Apple M4, CPU)
+
+- Offline `pytest`: 116 passed. `pytest -m real_inference`: 6 passed. Frontend: `tsc`, 14 unit tests and the build passed.
+- Real-browser flows (Brave via puppeteer-core, live stack with real models): upload, zone drawing, processing, review, export, semantic search, descriptions and evaluation page all passed. In the main flow, the check that the Evaluation page heading renders failed on a fresh data directory because the core development and frozen-test reports were not in it; copying them in made the evaluation flow pass. The exact main-flow check was not re-run afterwards.
+- Not tested: the static demo and Docker image were not rebuilt for this batch, and nothing was deployed.
+- Not added: dedicated Evaluation-page cards for the reliability batch and robustness sweep (results are in the evidence files and this document).
