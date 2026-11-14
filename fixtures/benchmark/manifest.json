@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "note": "Collection goal in the brief is 12 independent recordings (6 development, 6 frozen test). Only 2 are available: this is NOT statistical adequacy. Both are CC0 Xiph test sequences by Taurus Media Technik hosted on Wikimedia Commons.",
+  "annotation": {
+    "method": "Manual review of raw decoded frames sampled every 0.4 s with only the zone outline drawn (no detector output shown). Intervals are visibility intervals rounded to 0.4 s.",
+    "reviewers": 1,
+    "reviewer_note": "One reviewer (the implementing assistant), not expert consensus. Contamination: the reviewer had already seen detector event lists for both clips while building the pipeline, so the test split is NOT a blind test.",
+    "temporal_match": "same event type and zone, temporal IoU >= 0.5, one-to-one"
+  },
+  "sources": [
+    {"id": "pedestrian_area", "file": "pedestrian_area.webm", "sha1": "51e89a672896e45cca17aa46cd223630a6266e26", "scene_id": "munich-neuhauser-str-pedestrian", "split": "development",
+     "license": "CC0 1.0", "author": "Taurus Media Technik", "source_page": "https://commons.wikimedia.org/wiki/File:Video_Codec_Test_pedestrian_area_1080p25.y4m.webm", "duration_ms": 15125,
+     "zones": "zones_pedestrian_area.json", "acquired": "2026-11-14 via Wikimedia Commons API, SHA-1 verified",
+     "units": [
+       {"id": "dev-doorway", "types": ["zone_entry"], "zones": ["z-doorway"], "truth": [
+         {"type": "zone_entry", "zone_id": "z-doorway", "start_ms": 2000, "end_ms": 6400, "note": "man in white shirt standing in the doorway, visible"},
+         {"type": "zone_entry", "zone_id": "z-doorway", "start_ms": 12000, "end_ms": 15000, "note": "same man visible again after foreground occlusion (about 7 s to 11.6 s)"}]},
+       {"id": "dev-corner-negative", "types": ["zone_entry"], "zones": ["z-corner"], "truth": [], "note": "upper-left facade: nobody's feet are ever there"}]},
+    {"id": "rush_hour", "file": "rush_hour.webm", "sha1": "a80ae4df93bc2b24004ca1f850e4b1e3e666a603", "scene_id": "munich-rush-hour-traffic", "split": "test",
+     "license": "CC0 1.0", "author": "Taurus Media Technik", "source_page": "https://commons.wikimedia.org/wiki/File:Video_Codec_Test_rush_hour_1080p25.y4m.webm", "duration_ms": 20114,
+     "zones": "zones_rush_hour.json", "acquired": "2026-11-14 via Wikimedia Commons API, SHA-1 verified",
+     "units": [
+       {"id": "test-stationary-car", "types": ["stationary_object"], "zones": [null], "truth": [
+         {"type": "stationary_object", "zone_id": null, "start_ms": 0, "end_ms": 20000, "note": "red car in the foreground stays in place for the whole clip (queueing at a red light)"}]},
+       {"id": "test-people-negative", "types": ["zone_entry"], "zones": ["z-people"], "truth": [], "note": "pavement strip: no people cross it"}]}
+  ],
+  "not_annotated": ["detection boxes", "tracks", "passage occupancy events", "stationary bicycles", "the many people crossing the pedestrian clip (ground contact cannot be judged reliably: heavy occlusion and cropped foreground people)"]
+}

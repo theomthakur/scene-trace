@@ -1,0 +1,552 @@
+{
+  "annotation": {
+    "caveat": "One reviewer (the implementing assistant), not expert consensus. Contamination: the reviewer had already seen detector event lists for both clips while building the pipeline, so the test split is NOT a blind test.",
+    "method": "Manual review of raw decoded frames sampled every 0.4 s with only the zone outline drawn (no detector output shown). Intervals are visibility intervals rounded to 0.4 s.",
+    "reviewers": 1
+  },
+  "code_commit": "a8a1f52d2c0d72f951891bcfc3d882e5cdb1eeb7",
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "detector": {
+    "box_format": "normalized xyxy",
+    "device": "cpu",
+    "name": "fasterrcnn_mobilenet_v3_large_320_fpn",
+    "num_coco_categories": 91,
+    "score_threshold": 0.5,
+    "supported_classes": [
+      "person",
+      "bicycle",
+      "car",
+      "motorcycle",
+      "bus",
+      "truck",
+      "backpack",
+      "handbag",
+      "suitcase"
+    ],
+    "torch": "2.15.0",
+    "torchvision": "0.29.2",
+    "weights": "COCO_V1",
+    "weights_file": "fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth",
+    "weights_sha256": "907ea3f91ff92242bc1baea8049276a3e76bca48ce7560bd268cc029f37977b5",
+    "weights_url": "https://download.pytorch.org/models/fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth"
+  },
+  "elapsed_s": 43.2,
+  "generated_at": "2026-11-14T16:10:27.360745+00:00",
+  "hardware": "arm64 macOS-26.5.1-arm64-arm-64bit, device cpu",
+  "headline": "Measured on 2 CC0 source recordings plus generated fixtures. Descriptive only: far too small for statistical claims.",
+  "lanes": {
+    "development": {
+      "baseline_no_persistence": {
+        "metrics": {
+          "false_alerts_per_negative_video_hour": {
+            "false_alerts": 0,
+            "negative_hours": 0.0042,
+            "undefined_reason": null,
+            "value": 0.0
+          },
+          "false_positives": 5,
+          "missed_events": 1,
+          "onset_abs_error_ms_mean": 200.0,
+          "onset_matched_count": 1,
+          "precision": {
+            "denominator": 6,
+            "numerator": 1,
+            "undefined_reason": null,
+            "value": 0.16666666666666666
+          },
+          "recall": {
+            "denominator": 2,
+            "numerator": 1,
+            "undefined_reason": null,
+            "value": 0.5
+          },
+          "true_positives": 1
+        },
+        "units": [
+          {
+            "clip": "pedestrian_area",
+            "false_positives": [
+              0,
+              1,
+              3,
+              4,
+              5
+            ],
+            "hours": 0.004201388888888889,
+            "matches": [
+              {
+                "onset_abs_error_ms": 200,
+                "pred": 2,
+                "tiou": 0.8696,
+                "truth": 0
+              }
+            ],
+            "missed": [
+              1
+            ],
+            "n_pred": 6,
+            "n_truth": 2,
+            "negative": false,
+            "pred": [
+              {
+                "end_ms": 400,
+                "start_ms": 200,
+                "track_ids": [
+                  3
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [
+                  "present_at_video_start"
+                ],
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 1200,
+                "start_ms": 600,
+                "track_ids": [
+                  14
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 6000,
+                "start_ms": 1800,
+                "track_ids": [
+                  19
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 10600,
+                "start_ms": 10400,
+                "track_ids": [
+                  81
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 12800,
+                "start_ms": 12000,
+                "track_ids": [
+                  95
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 14800,
+                "start_ms": 13400,
+                "track_ids": [
+                  103
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [
+                  "still_active_at_video_end"
+                ],
+                "zone_id": "z-doorway"
+              }
+            ],
+            "truth": [
+              {
+                "end_ms": 6400,
+                "note": "man in white shirt standing in the doorway, visible",
+                "start_ms": 2000,
+                "type": "zone_entry",
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 15000,
+                "note": "same man visible again after foreground occlusion (about 7 s to 11.6 s)",
+                "start_ms": 12000,
+                "type": "zone_entry",
+                "zone_id": "z-doorway"
+              }
+            ],
+            "unit": "dev-doorway"
+          },
+          {
+            "clip": "pedestrian_area",
+            "false_positives": [],
+            "hours": 0.004201388888888889,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "dev-corner-negative"
+          }
+        ]
+      },
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.0042,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 1,
+        "missed_events": 1,
+        "onset_abs_error_ms_mean": 200.0,
+        "onset_matched_count": 1,
+        "precision": {
+          "denominator": 2,
+          "numerator": 1,
+          "undefined_reason": null,
+          "value": 0.5
+        },
+        "recall": {
+          "denominator": 2,
+          "numerator": 1,
+          "undefined_reason": null,
+          "value": 0.5
+        },
+        "true_positives": 1
+      },
+      "notes": [],
+      "per_clip": {
+        "runs": [
+          {
+            "clip": "pedestrian_area",
+            "detections": 651,
+            "observations_sha256": "e58c8a5fe85d5a9b91d1af04476be2e6d65f23445a1b823691049ce2ddf6cee5",
+            "quality_flags": [],
+            "sampled_frames": 75,
+            "timings": {
+              "detect_ms_per_frame": 67.9,
+              "detect_s": 5.09,
+              "detections": 651,
+              "realtime_factor": 2.853,
+              "sampled_frames": 75,
+              "total_s": 5.187
+            },
+            "tracks": 117
+          }
+        ],
+        "units": [
+          {
+            "clip": "pedestrian_area",
+            "false_positives": [
+              1
+            ],
+            "hours": 0.004201388888888889,
+            "matches": [
+              {
+                "onset_abs_error_ms": 200,
+                "pred": 0,
+                "tiou": 0.8696,
+                "truth": 0
+              }
+            ],
+            "missed": [
+              1
+            ],
+            "n_pred": 2,
+            "n_truth": 2,
+            "negative": false,
+            "pred": [
+              {
+                "end_ms": 6000,
+                "start_ms": 1800,
+                "track_ids": [
+                  19
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 14800,
+                "start_ms": 13400,
+                "track_ids": [
+                  103
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [
+                  "still_active_at_video_end"
+                ],
+                "zone_id": "z-doorway"
+              }
+            ],
+            "truth": [
+              {
+                "end_ms": 6400,
+                "note": "man in white shirt standing in the doorway, visible",
+                "start_ms": 2000,
+                "type": "zone_entry",
+                "zone_id": "z-doorway"
+              },
+              {
+                "end_ms": 15000,
+                "note": "same man visible again after foreground occlusion (about 7 s to 11.6 s)",
+                "start_ms": 12000,
+                "type": "zone_entry",
+                "zone_id": "z-doorway"
+              }
+            ],
+            "unit": "dev-doorway"
+          },
+          {
+            "clip": "pedestrian_area",
+            "false_positives": [],
+            "hours": 0.004201388888888889,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "dev-corner-negative"
+          }
+        ]
+      },
+      "scope": "1 source recording(s): pedestrian_area. 2 annotated events across 2 evaluation units (1 negative). Real pixel inference with pretrained COCO weights.",
+      "status": "evaluated"
+    },
+    "fixture": {
+      "baseline_no_persistence": {
+        "metrics": {
+          "false_alerts_per_negative_video_hour": {
+            "false_alerts": 12,
+            "negative_hours": 0.00533,
+            "undefined_reason": null,
+            "value": 2249.9999999999995
+          },
+          "false_positives": 12,
+          "missed_events": 0,
+          "onset_abs_error_ms_mean": 0.0,
+          "onset_matched_count": 11,
+          "precision": {
+            "denominator": 23,
+            "numerator": 11,
+            "undefined_reason": null,
+            "value": 0.4782608695652174
+          },
+          "recall": {
+            "denominator": 11,
+            "numerator": 11,
+            "undefined_reason": null,
+            "value": 1.0
+          },
+          "true_positives": 11
+        }
+      },
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.00533,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 0,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": 0.0,
+        "onset_matched_count": 11,
+        "precision": {
+          "denominator": 11,
+          "numerator": 11,
+          "undefined_reason": null,
+          "value": 1.0
+        },
+        "recall": {
+          "denominator": 11,
+          "numerator": 11,
+          "undefined_reason": null,
+          "value": 1.0
+        },
+        "true_positives": 11
+      },
+      "notes": [
+        "Fixture lane only: scripted observations, tagged source=fixture."
+      ],
+      "per_clip": [
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 0,
+          "purpose": "empty input yields no events",
+          "scenario": "empty",
+          "tp": 0,
+          "truth": 0
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 1,
+          "purpose": "one entry, one event, no repeat per frame",
+          "scenario": "clear_entry",
+          "tp": 1,
+          "truth": 1
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 0,
+          "purpose": "crossing under the 1.0 s dwell is suppressed",
+          "scenario": "brief_crossing",
+          "tp": 0,
+          "truth": 0
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 1,
+          "purpose": "boundary points count as inside",
+          "scenario": "boundary_grazing",
+          "tp": 1,
+          "truth": 1
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 0,
+          "purpose": "alternating boundary noise does not create an event",
+          "scenario": "flicker",
+          "tp": 0,
+          "truth": 0
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 2,
+          "purpose": "a gap longer than 0.4 s splits the occupancy and missed time does not count as dwell",
+          "scenario": "occlusion_gap",
+          "tp": 2,
+          "truth": 2
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 1,
+          "purpose": "stationary candidate for a supported object; people excluded",
+          "scenario": "stationary_object",
+          "tp": 1,
+          "truth": 1
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 1,
+          "purpose": "small jitter does not reset the window",
+          "scenario": "stationary_jitter",
+          "tp": 1,
+          "truth": 1
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 2,
+          "purpose": "one interval can satisfy two rules; both are kept as separate events",
+          "scenario": "overlapping_rules",
+          "tp": 2,
+          "truth": 2
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 1,
+          "purpose": "dwell is measured in seconds, not frames",
+          "scenario": "frame_rate_10fps",
+          "tp": 1,
+          "truth": 1
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 0,
+          "purpose": "tentative tracks never produce events",
+          "scenario": "tentative_only",
+          "tp": 0,
+          "truth": 0
+        },
+        {
+          "fn": 0,
+          "fp": 0,
+          "predicted": 2,
+          "purpose": "events are not merged across different track IDs",
+          "scenario": "two_tracks_no_merge",
+          "tp": 2,
+          "truth": 2
+        }
+      ],
+      "scope": "12 generated scenarios with deterministic ground truth. Tests the temporal rules WITHOUT a detector; these numbers say nothing about real video.",
+      "status": "evaluated"
+    },
+    "test": {
+      "reason": "The frozen test split has not been run yet. It is run once with --include-test after the configuration is frozen.",
+      "status": "not_evaluated"
+    }
+  },
+  "manifest_sha256": "7ecf504c860fef6e271f8194fbc704d138c6507d9490ec2332ae362d0a64344d",
+  "not_measured": [
+    "Detection accuracy (mAP) and tracking metrics (ID switches): no ground-truth boxes or tracks were annotated.",
+    "Passage occupancy events on real footage: not annotated.",
+    "Retrieval Recall@k: not evaluated beyond functional tests of the query parser (no relevance-labelled query set).",
+    "Explanation quality: there is no explanation or VLM component.",
+    "Generalisation: two CC0 clips (one outdoor pedestrian scene, one traffic scene) cannot represent warehouses or indoor aisles.",
+    "Human review time and usefulness: no user study was done."
+  ],
+  "scope_warning": "Two sources (goal was 12). One reviewer annotated from raw frames after seeing detector output on both clips while developing, so even the test split is not blind. Fixture-lane scores are about the temporal rules only. Every real-footage figure rests on 1 to 3 events; read the denominators, not the percentages.",
+  "sweep": [
+    {
+      "detections": 251,
+      "events": 0,
+      "fn": 2,
+      "fp": 0,
+      "label": "2 fps",
+      "total_s": 2.3,
+      "tp": 0,
+      "tracks": 79
+    },
+    {
+      "detections": 651,
+      "events": 2,
+      "fn": 1,
+      "fp": 1,
+      "label": "5 fps (default)",
+      "total_s": 6.4,
+      "tp": 1,
+      "tracks": 117
+    },
+    {
+      "detections": 1290,
+      "events": 3,
+      "fn": 0,
+      "fp": 1,
+      "label": "10 fps",
+      "total_s": 17.4,
+      "tp": 2,
+      "tracks": 146
+    },
+    {
+      "detections": 822,
+      "events": 2,
+      "fn": 1,
+      "fp": 1,
+      "label": "5 fps, threshold 0.30",
+      "total_s": 5.1,
+      "tp": 1,
+      "tracks": 179
+    },
+    {
+      "detections": 541,
+      "events": 2,
+      "fn": 0,
+      "fp": 0,
+      "label": "5 fps, threshold 0.70",
+      "total_s": 5.7,
+      "tp": 2,
+      "tracks": 76
+    }
+  ],
+  "sweep_note": "Development clip only (one source). It describes how counts move with sampling and threshold; it cannot establish an optimum, and defaults were not changed on this basis."
+}

@@ -1,0 +1,4 @@
+[
+  {"id": "z-doorway", "name": "Doorway", "role": "restricted", "polygon": [[0.91, 0.50], [0.99, 0.50], [0.99, 0.80], [0.91, 0.80]]},
+  {"id": "z-corner", "name": "Upper-left facade", "role": "restricted", "polygon": [[0.02, 0.10], [0.30, 0.10], [0.30, 0.30], [0.02, 0.30]]}
+]

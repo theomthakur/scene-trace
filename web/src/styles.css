@@ -1,0 +1,57 @@
+:root {
+  --ink: #0f1f3d; --muted: #4a5a78; --bg: #f5f6f8; --surface: #ffffff; --line: #cfd6e2; --accent: #1f5eff; --accent-ink: #ffffff;
+  --ok: #0a7a4a; --warn: #8a5300; --err: #b3261e; --warn-bg: #fff6e5; --err-bg: #fdecea; --info-bg: #eaf0ff; --focus: #0b3fd9;
+}
+* { box-sizing: border-box }
+html { font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--ink); background: var(--bg) }
+body { margin: 0 }
+h1 { font-size: 26px; margin: 0 0 8px } h2 { font-size: 17px; margin: 0 0 8px } h3 { font-size: 14px; margin: 16px 0 6px }
+a { color: var(--accent) } code, pre { font: 12.5px ui-monospace, Menlo, monospace } pre { background: #eef1f6; padding: 10px; border-radius: 6px; overflow: auto; max-height: 320px }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px }
+.skip { position: absolute; left: -999px } .skip:focus { left: 8px; top: 8px; background: var(--surface); padding: 8px 12px; z-index: 10 }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap }
+.top { display: flex; align-items: center; gap: 24px; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--line); flex-wrap: wrap }
+.brand { font-weight: 700; display: flex; align-items: center; gap: 10px } .mark { width: 14px; height: 14px; border-radius: 3px; background: var(--accent); display: inline-block }
+nav { display: flex; gap: 4px; flex: 1 } nav a { padding: 8px 12px; border-radius: 6px; color: var(--ink); text-decoration: none; min-height: 40px; display: inline-flex; align-items: center }
+nav a[aria-current='page'] { background: var(--info-bg); color: var(--accent); font-weight: 600 }
+.badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #e7eaf1; color: var(--ink) }
+.badge-live { background: #e3f4ec; color: var(--ok) } .badge-demo { background: var(--warn-bg); color: var(--warn); border: 1px dashed var(--warn) } .badge-err { background: var(--err-bg); color: var(--err) }
+main { padding: 16px 24px 48px; max-width: 1500px; margin: 0 auto } main:focus { outline: none }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px }
+.grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr); gap: 14px; align-items: start } @media (max-width: 1000px) { .grid { grid-template-columns: 1fr } main { padding: 12px } }
+.toolbar { display: flex; gap: 20px; align-items: end; flex-wrap: wrap } .upload { display: flex; gap: 10px; align-items: end; flex-wrap: wrap }
+label { display: inline-flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted) } label.check, label.radio { flex-direction: row; align-items: center; gap: 6px; color: var(--ink); font-size: 14px; min-height: 32px } label.block { display: flex; margin-top: 8px }
+input[type='text'], input:not([type]), select, textarea { font: inherit; padding: 8px 10px; border: 1px solid #7b88a3; border-radius: 6px; background: #fff; color: var(--ink); min-height: 40px }
+textarea { width: 100% }
+.btn { font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 6px; border: 1px solid #7b88a3; background: #fff; color: var(--ink); cursor: pointer; min-height: 40px; text-decoration: none; display: inline-flex; align-items: center }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) } .btn:disabled { opacity: .5; cursor: not-allowed }
+.link { background: none; border: 0; color: var(--accent); cursor: pointer; font: inherit; text-decoration: underline; padding: 4px; min-height: 32px }
+.chip { font: inherit; padding: 4px 10px; border: 1px solid #7b88a3; border-radius: 999px; background: #fff; cursor: pointer; min-height: 32px } .chip.on { background: var(--ink); color: #fff; border-color: var(--ink) }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0 } fieldset { border: 0; padding: 0; margin: 0 } fieldset.inline { display: flex; gap: 12px }
+.muted { color: var(--muted); font-size: 13px } .empty { color: var(--muted) } .empty.big { padding: 48px 0; text-align: center; font-size: 16px } .count { font-size: 12px; background: #e7eaf1; border-radius: 999px; padding: 1px 8px; margin-left: 6px }
+.notice { padding: 10px 12px; border-radius: 8px; margin: 8px 0; font-size: 14px } .notice p { margin: 4px 0 } .notice.info { background: var(--info-bg) } .notice.warn { background: var(--warn-bg); color: #4d3000 } .notice.err { background: var(--err-bg); color: #6b1410 }
+.player .stage { position: relative; width: 100%; background: #0b1426; border-radius: 8px; overflow: hidden; max-height: 70vh }
+.stage video, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain } .stage canvas { pointer-events: none } .stage canvas.drawing { pointer-events: auto; cursor: crosshair }
+.stage.is-fs { max-height: none; width: 100vw; height: 100vh; aspect-ratio: auto !important }
+.stage-msg { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; text-align: center; padding: 20px } .stage-msg.err { background: rgba(179, 38, 30, .85) }
+.player-bar { display: flex; gap: 8px; align-items: center; margin-top: 8px }
+.timeline { margin-top: 10px } .tl-axis { position: relative; height: 22px; background: #e7eaf1; border-radius: 6px; cursor: pointer } .tl-playhead { position: absolute; top: -3px; bottom: -3px; width: 3px; background: var(--ink); border-radius: 2px }
+.tl-empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: var(--muted) } .tl-lanes { position: relative; margin-top: 6px }
+.tl-seg { position: absolute; height: 26px; border: 2px solid var(--accent); background: var(--info-bg); color: var(--ink); border-radius: 5px; font: 600 11px system-ui; overflow: hidden; white-space: nowrap; cursor: pointer; padding: 0 4px; min-width: 10px }
+.tl-seg.sel { background: var(--accent); color: #fff } .tl-seg.st-confirmed { border-color: var(--ok) } .tl-seg.st-dismissed { border-color: #6b7690; opacity: .7 } .tl-seg.st-uncertain { border-color: var(--warn) }
+.tl-scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px }
+ul.events, .zlist, .flags { list-style: none; padding: 0; margin: 8px 0 } .zlist li { display: flex; align-items: center; gap: 8px; padding: 4px 0 }
+.ev { width: 100%; text-align: left; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; margin-bottom: 6px; cursor: pointer; font: inherit; color: var(--ink); min-height: 44px }
+.ev.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--info-bg) } .ev-title { font-weight: 600 } .ev-time { color: var(--muted); font-size: 13px }
+.pill { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #e7eaf1; color: var(--ink) } .pill.st-confirmed { background: #e3f4ec; color: var(--ok) } .pill.st-dismissed { background: #e7eaf1; color: #4a5a78 } .pill.st-uncertain, .pill.flag { background: var(--warn-bg); color: var(--warn) }
+.dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block } .dot.restricted { background: var(--accent) } .dot.passage { background: #b45f06 }
+.filters, .search { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin: 8px 0 } .search input { flex: 1; min-width: 160px }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; margin: 8px 0 } .kv dt { color: var(--muted) } .kv dd { margin: 0; overflow-wrap: anywhere }
+.frames { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px } .frame { border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: 0; cursor: pointer; font: inherit; color: var(--ink); text-align: center; overflow: hidden }
+.frame img { width: 100%; display: block } .frame span, .frame.missing { display: block; font-size: 12px; padding: 4px } .clip { width: 100%; border-radius: 6px; background: #0b1426 }
+.flags li { padding: 6px 10px; background: var(--warn-bg); border-radius: 6px; margin-bottom: 4px; font-size: 13px }
+progress { width: 220px; height: 10px; vertical-align: middle } .state { text-transform: capitalize } .s-completed { color: var(--ok) } .s-failed, .s-interrupted { color: var(--err) } .s-cancelled { color: var(--warn) }
+.doc { max-width: 860px } .doc.wide { max-width: 1100px } .doc .lead { font-size: 17px; color: var(--muted) } .diagram { width: 100%; height: auto; background: #fff; border: 1px solid var(--line); border-radius: 8px; margin: 8px 0 }
+.d-box { fill: #eaf0ff; stroke: var(--accent); stroke-width: 1.5 } .d-t { font: 600 13px system-ui; fill: var(--ink) } .d-s { font: 11px system-ui; fill: var(--muted) } .d-line { stroke: var(--ink); stroke-width: 1.5; fill: none }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 8px 0 } th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top } thead th { background: #eef1f6 } tbody th { font-weight: 500; background: #fafbfc }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important } }
