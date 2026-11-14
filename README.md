@@ -1,59 +1,77 @@
-# Video Investigation Platform
+# SceneTrace
 
-A local tool for answering "what happened in this video, where, and which evidence supports it". It runs a real pretrained object detector on decoded video pixels, tracks objects, turns noisy detections into rule-based event candidates over configurable zones, and gives a reviewer a timeline, evidence frames and clips, and a persisted review workflow.
+SceneTrace helps you investigate what happened in a video. Upload a recording, mark areas of interest, and review detected events alongside the frames and clips that support them.
 
-It supports investigation. It does not infer intent, blame, identity or safety compliance, and it does not recognise faces or licence plates.
+The application runs a pretrained object detector on video frames, tracks objects across time, and applies rules to identify possible events. A reviewer can inspect each finding, add a note and export a report.
 
-**Status:** local prototype, built and tested on one Apple M4 laptop (CPU inference). Nothing is deployed or published. See [IMPLEMENTATION-STATUS.md](IMPLEMENTATION-STATUS.md) for what is demonstrated and what is not.
+## What you can do
 
-## What is real and what is not
-- **Real:** `fasterrcnn_mobilenet_v3_large_320_fpn` with COCO weights runs on actual decoded frames. The pipeline records the weights hash, timings and device.
-- **Baseline, not state of the art:** the tracker is a custom IoU plus Hungarian baseline (not ByteTrack or DeepSORT). It fragments identities in crowded scenes. Nothing here is trained or fine-tuned.
-- **Small evaluation:** two CC0 clips (goal was twelve) and generated fixtures. Real-footage figures rest on one to three events. Read the denominators.
+- Upload a short video and draw restricted or passage zones.
+- Run local analysis and review a timeline of candidate events.
+- Inspect source frames and clips, filter or search events, and save review decisions.
+- Explore evaluation results and the system design within the application.
+- Export an investigation report as HTML, Markdown or JSON.
 
-## Quick start (macOS or Linux, Python 3.11, Node 20+, ffmpeg with libx264)
+## Run locally
+
+The current setup was tested on an Apple M4 Mac using CPU inference. You need Python 3.11, Node.js 20 or later, `uv`, and FFmpeg with H.264 encoding support. The first model download requires an internet connection.
+
 ```bash
-uv venv --python 3.11 .venv && source .venv/bin/activate
-uv pip install -r requirements.lock && uv pip install -e . --no-deps
-python -m video_investigator.cli doctor            # environment check, downloads the weights (78 MB) on first use
-python scripts/fetch_demo_media.py                 # two CC0 clips, SHA-1 verified, into var/candidates/
-(cd web && npm ci)
-scripts/dev.sh                                     # API :8000, one worker, UI :5173  (scripts/dev.sh stop to stop)
+uv venv --python 3.11 .venv
+source .venv/bin/activate
+uv pip install -r requirements.lock
+uv pip install -e . --no-deps
+python -m video_investigator.cli doctor
+python scripts/fetch_demo_media.py
+cd web && npm ci && cd ..
+scripts/dev.sh
 ```
-Open http://127.0.0.1:5173, upload `var/candidates/pedestrian_area.webm`, draw a zone on the video, **Save zones**, **Process video** (about 6 s on CPU for that clip), click an event.
 
-The commands from the brief work individually:
-```bash
-python -m video_investigator.cli doctor --clip var/candidates/pedestrian_area.webm
-uvicorn video_investigator.api.app:app --port 8000
-python -m video_investigator.worker.main            # add --once to drain the queue and exit
-(cd web && npm run dev)
-python -m video_investigator.cli process var/candidates/pedestrian_area.webm --zones fixtures/zones/pedestrian_area.json
-python -m video_investigator.cli evaluate           # fixtures + development footage (the test split runs once, with --include-test)
-python -m video_investigator.cli export-demo        # static, read-only demo bundle into web/public/demo
-```
-Static demo mode (no backend, visibly labelled): `http://127.0.0.1:5173/?mode=demo` after `export-demo`.
+Open **http://127.0.0.1:5173**. Upload `var/candidates/pedestrian_area.webm`, draw and save a zone, then select **Process video**. When the run finishes, select an event to inspect its evidence.
 
-## Tests
+Stop the local servers with:
+
 ```bash
-python -m pytest                          # 64 offline tests (rules on fixtures, tracker, media, API, worker kill/restart, benchmark)
-python -m pytest -m real_inference        # 4 tests with the real detector on the real clip (needs weights and clips)
-(cd web && npm test && npm run build)     # 14 unit tests, type-check, production build
-(cd web && node e2e/browser.mjs /tmp/clip.webm)   # real-browser flow; needs the stack running and a Chromium-based browser
+scripts/dev.sh stop
 ```
-Copy the clip outside `~/Documents` for the browser test on macOS: headless Brave was denied reading files there.
+
+The sample media and local run data are not included in the repository. The media-fetch script downloads two clips; see [third-party notices](THIRD-PARTY-NOTICES.md) for sources and license information.
+
+## Read-only demo
+
+After completing a local run, create a demo bundle with:
+
+```bash
+python -m video_investigator.cli export-demo
+```
+
+Then open `http://127.0.0.1:5173/?mode=demo`. The demo shows saved results and does not run the model. The bundle is local and ignored by Git. The project is not yet configured for a Vercel deployment.
 
 ## How it works
-`video -> probe and hash -> timestamped decode (PyAV, milliseconds) -> detector -> tracker -> versioned temporal rules over zones -> events with evidence -> review UI`. A single worker claims one run at a time from a SQLite job table with a lease and heartbeat. Artifacts are written first, a manifest is published atomically, and only then does the database say "completed". See `web` System Design view and [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md).
 
-Events: restricted-zone entry (bottom-centre of the box inside a polygon for a dwell), stationary object candidate, and aisle occupancy candidate (2D overlap, not clearance). Parameters and their evidence are in [docs/PARAMETER-LEDGER.md](docs/PARAMETER-LEDGER.md).
+```text
+Video → frames → object detection → tracking → event rules
+                                               ↓
+                              evidence → timeline → human review
+```
 
-## Honest limits
-- A general COCO detector misses and mislabels objects; confidence is a model score, not a probability.
-- Tracks are temporary within one run and fragment in crowds.
-- A run with no events is not an incident-free certificate; quality flags travel with each run.
-- Measured on one machine only; real inference was deterministic there. Other hardware may differ slightly.
-- The demonstration clips are outdoor and low-angle, not an indoor aisle.
-- Not built: embeddings, video-language explanation, cross-camera tracking, fine-tuning, cloud deployment.
+A FastAPI service manages uploads and runs. One local worker processes video and saves evidence; SQLite stores runs, events and reviews. The React interface displays the recording, timeline and findings. A run is marked complete only after its artifacts are saved.
 
-Licences and notices: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Data and model details: [docs/DATA-CARD.md](docs/DATA-CARD.md), [docs/MODEL-CARD.md](docs/MODEL-CARD.md).
+The current rules flag restricted-zone entry, stationary objects and possible passage occupancy. These are **candidates for review**: image overlap does not prove a physical obstruction, and a stationary object is not automatically unattended.
+
+## Results and limitations
+
+The application uses a pretrained COCO detector and a custom tracking baseline; the model was not trained or fine-tuned in this project. The tracker can lose or split identities, especially in crowded scenes, and the detector can miss or misclassify objects.
+
+The recorded evaluation uses generated fixtures and **two independent real-video recordings**. The real-footage test is very small and was not blind, so its results do not establish performance on new environments. See the Evaluation page and [implementation status](IMPLEMENTATION-STATUS.md) for counts, methods and known gaps. A run with no findings does not certify that a video is incident-free.
+
+SceneTrace does not identify people, determine intent or blame, or make safety-compliance decisions. Semantic embeddings, video-language explanations, cross-camera tracking, model fine-tuning and cloud deployment are not implemented.
+
+## Tests
+
+```bash
+python -m pytest
+cd web && npm test && npm run build
+```
+
+Real-inference tests require the model weights and downloaded clips: `python -m pytest -m real_inference`. They are separate from the offline suite. See [the walkthrough](docs/WALKTHROUGH.md), [parameter ledger](docs/PARAMETER-LEDGER.md), [data card](docs/DATA-CARD.md) and [model card](docs/MODEL-CARD.md) for implementation details.

@@ -16,7 +16,7 @@ export default function App() {
   const [view, setView] = useState<ViewId>(viewFromHash())
   const [health, setHealth] = useState<'checking' | 'up' | 'down'>(demo ? 'up' : 'checking')
   useEffect(() => { const f = () => setView(viewFromHash()); window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f) }, [])
-  useEffect(() => { document.title = `${VIEWS.find(([id]) => id === view)![1]} - Video Investigation Platform` }, [view])
+  useEffect(() => { document.title = `${VIEWS.find(([id]) => id === view)![1]} | SceneTrace` }, [view])
   useEffect(() => { if (!demo) fetch('/api/health').then(r => setHealth(r.ok ? 'up' : 'down')).catch(() => setHealth('down')) }, [demo])
   const modeBadge = useMemo(() => demo
     ? <span className="badge badge-demo" role="status">Static demo: precomputed results, read only</span>
@@ -28,7 +28,7 @@ export default function App() {
     <>
       <a className="skip" href="#main">Skip to content</a>
       <header className="top">
-        <div className="brand"><span className="mark" aria-hidden="true" />Video Investigation Platform</div>
+        <div className="brand"><span className="mark" aria-hidden="true"><span /></span><span>SceneTrace <small>VIDEO INTELLIGENCE</small></span></div>
         <nav aria-label="Views">
           {VIEWS.map(([id, label]) => <a key={id} href={`#/${id}`} aria-current={view === id ? 'page' : undefined}>{label}</a>)}
         </nav>

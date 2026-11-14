@@ -26,11 +26,12 @@ export function EventList({ events, hits, selectedId, onSelect, backend, runId, 
   }
   useEffect(() => { setQ(''); setNote(null); onSearchResults(null) }, [runId])   // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <section aria-labelledby="events-h" className="panel">
-      <h2 id="events-h">Events <span className="count">{shown.length}</span></h2>
+    <section aria-labelledby="events-h" className="panel event-panel">
+      <div className="section-heading"><div><p className="eyebrow">ANALYSIS</p><h2 id="events-h">Detected events <span className="count">{shown.length}</span></h2></div></div>
+      <p className="panel-description">Select an event to inspect its timeline and supporting frames.</p>
       <form className="search" onSubmit={run} role="search">
         <label className="sr" htmlFor="q">Search events</label>
-        <input id="q" value={q} onChange={e => setQ(e.target.value)} placeholder='Try: "person entering restricted zone before 5 s"' />
+        <input id="q" value={q} onChange={e => setQ(e.target.value)} placeholder="Search events or time..." />
         <button className="btn" disabled={busy}>Search</button>
       </form>
       {note && <div className={`notice ${note.unsupported ? 'warn' : 'info'}`} role="status">

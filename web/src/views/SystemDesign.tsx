@@ -1,40 +1,18 @@
+const stages = [
+  { n: '01', title: 'Ingest', label: 'Video → frames', text: 'Validate the recording, preserve its original, and decode frames with their presentation times.', tech: 'FastAPI · PyAV' },
+  { n: '02', title: 'Understand', label: 'Frames → tracks', text: 'A pretrained detector identifies supported objects. A tracker connects observations across frames.', tech: 'PyTorch · IoU tracking' },
+  { n: '03', title: 'Find', label: 'Tracks → events', text: 'Configurable zones and temporal rules turn observations into candidate events with evidence.', tech: 'OpenCV · rules' },
+  { n: '04', title: 'Review', label: 'Evidence → decisions', text: 'Explore the timeline, inspect source frames and record a human review for each finding.', tech: 'React · SQLite' },
+]
+
 export default function SystemDesign() {
-  const box = (x: number, y: number, w: number, label: string, sub: string) => <g><rect x={x} y={y} width={w} height={54} rx={8} className="d-box" /><text x={x + w / 2} y={y + 23} textAnchor="middle" className="d-t">{label}</text><text x={x + w / 2} y={y + 41} textAnchor="middle" className="d-s">{sub}</text></g>
   return (
-    <div className="doc">
-      <h1>System design</h1>
-      <p className="lead">A video investigation tool helps a reviewer answer what happened, where, and which evidence supports it. It supports review. It does not decide intent, blame, identity or safety compliance.</p>
-      <h2>Flow</h2>
-      <svg viewBox="0 0 980 190" role="img" aria-label="Pipeline: video to decode, detector, tracker, rules, events and evidence, review interface" className="diagram">
-        {box(10, 20, 120, 'Video', 'hash, probe')}{box(160, 20, 130, 'Decode', 'PyAV, pts in ms')}{box(320, 20, 150, 'Detector', 'Faster R-CNN COCO')}{box(500, 20, 130, 'Tracker', 'IoU + Hungarian')}{box(660, 20, 150, 'Temporal rules', 'zones, dwell, gaps')}{box(840, 20, 130, 'Evidence', 'frames, clips')}
-        {box(160, 120, 150, 'SQLite (WAL)', 'runs, events, reviews')}{box(340, 120, 150, 'Worker', 'lease, cancel, recover')}{box(520, 120, 130, 'FastAPI', 'contracts, ranges')}{box(680, 120, 150, 'React review UI', 'timeline, evidence')}
-        <path d="M130 47h30M290 47h30M470 47h30M630 47h30M810 47h30M235 74v46M415 74v46M585 74v46M755 74v46" className="d-line" />
-      </svg>
-      <h2>Technology choices</h2>
-      <ul>
-        <li><strong>Detector.</strong> torchvision Faster R-CNN MobileNetV3-Large 320 FPN with COCO weights, on CPU by default. Chosen for manageable complexity, not best accuracy. Weights are not trained or fine-tuned here.</li>
-        <li><strong>Tracker.</strong> A custom baseline: per-class tracks, constant-velocity prediction over real elapsed time, IoU gate 0.20, Hungarian assignment. It is not ByteTrack or DeepSORT and does no re-identification.</li>
-        <li><strong>Time.</strong> Integer milliseconds from presentation timestamps. Sampling is by time, so variable frame rates do not shift events.</li>
-        <li><strong>Coordinates.</strong> Normalized xyxy in the upright frame. The UI maps pointers through the video content rectangle, so letterboxing does not skew zones.</li>
-        <li><strong>Storage.</strong> SQLite in WAL mode with a durable job table; artifacts live in per-attempt directories published by an atomic manifest.</li>
-      </ul>
-      <h2>Data model</h2>
-      <p>Video, ZoneSet (immutable versions), Run (frozen config and zones), Observation, Event (with evidence references and uncertainty flags), Review (revisioned). Detector confidence is stored separately from event correctness and is never presented as a calibrated probability.</p>
-      <h2>Failure handling and recovery</h2>
-      <ul>
-        <li>Invalid, oversized, non-video or untimed input is rejected before processing with an explicit code.</li>
-        <li>A worker claims one queued run with a lease and heartbeats. A stale lease becomes <em>interrupted</em>; restarting creates a fresh attempt and never appends to an old one.</li>
-        <li>Artifacts are written first, the manifest is published atomically, and only then does the database say completed.</li>
-        <li>Missing weights fail loudly. There is no fallback to fixtures or random weights.</li>
-        <li>Zero events is not "incident-free": quality flags (sparse detections, long gaps, timestamp fallback) travel with every run.</li>
-      </ul>
-      <h2>Limitations</h2>
-      <ul>
-        <li>A general COCO detector misses and mislabels objects, especially small, occluded or unusual ones.</li>
-        <li>The tracker fragments identities in crowded scenes at low sampling rates.</li>
-        <li>Image overlap is not physical clearance; a stationary object is not called unattended or abandoned.</li>
-        <li>Evaluation data is small. See the Evaluation view for exact denominators.</li>
-      </ul>
+    <div className="story-page">
+      <header className="story-hero"><div><p className="eyebrow">UNDER THE HOOD <span> / </span> SYSTEM DESIGN</p><h1>From footage to<br /><em>something you can verify.</em></h1><p>SceneTrace brings detection, tracking and human review into one investigation workflow. Each step keeps the original video close to the result.</p></div><div className="hero-index"><span>THE SYSTEM</span><strong>Four steps.<br />One clear trail.</strong><small>Designed for local investigation</small></div></header>
+      <section className="design-section"><div className="section-title"><div><p className="eyebrow">01 / THE PIPELINE</p><h2>How the pieces work together</h2></div><p>Follow a recording from input to review.</p></div><div className="pipeline-grid">{stages.map((s, i) => <article key={s.n} className="pipeline-card"><div className="pipeline-top"><span>{s.n}</span><span aria-hidden="true">{i < stages.length - 1 ? '↗' : '✓'}</span></div><h3>{s.title}</h3><strong>{s.label}</strong><p>{s.text}</p><small>{s.tech}</small></article>)}</div></section>
+      <section className="design-section"><div className="section-title"><div><p className="eyebrow">02 / ARCHITECTURE</p><h2>Built in layers</h2></div><p>Each layer has a clear responsibility.</p></div><div className="architecture-map" role="img" aria-label="The review interface connects through an API to durable storage and a processing worker; the worker runs detection, tracking and event rules and saves evidence."><div className="arch-node"><span>EXPERIENCE</span><strong>Review workspace</strong><small>React + TypeScript</small></div><b aria-hidden="true">→</b><div className="arch-node"><span>APPLICATION</span><strong>API + job state</strong><small>FastAPI + SQLite</small></div><b aria-hidden="true">→</b><div className="arch-node"><span>PROCESSING</span><strong>Vision worker</strong><small>Detection · tracking · rules</small></div><b aria-hidden="true">→</b><div className="arch-node"><span>OUTPUT</span><strong>Evidence + report</strong><small>Frames · clips · review</small></div></div><p className="arch-caption">The worker stores evidence before a run is marked complete. The reviewer can trace an event back to its source frames.</p></section>
+      <section className="design-section"><div className="section-title"><div><p className="eyebrow">03 / ENGINEERING CHOICES</p><h2>Designed for review, not guesswork</h2></div></div><div className="design-cards"><article><span>01</span><h3>Traceable by design</h3><p>Videos, run settings and evidence are recorded together, so a finding can be inspected in context.</p></article><article><span>02</span><h3>Recoverable work</h3><p>A worker lease detects interruptions; a restarted run creates a fresh attempt rather than mixing results.</p></article><article><span>03</span><h3>Human in the loop</h3><p>Detections are candidates. Reviewers can confirm, dismiss or mark a finding uncertain.</p></article></div></section>
+      <details className="technical-details"><summary>Technical details and current limitations <span>+</span></summary><div><p><strong>Vision.</strong> Faster R-CNN MobileNetV3 with pretrained COCO weights; custom per-class IoU assignment and velocity tracking. Weights were not trained here.</p><p><strong>Time and coordinates.</strong> Source presentation timestamps use milliseconds; boxes and zones use normalized upright-frame coordinates.</p><p><strong>Current limits.</strong> Small or occluded objects can be missed, and identities can fragment. Two-dimensional overlap is not proof of physical clearance. The real-footage evaluation is small; see Evaluation for its exact scope.</p><p><strong>Recovery.</strong> Inputs are validated, a lease and heartbeat track workers, and artifacts are published before completion is recorded. Missing weights are reported as failures.</p></div></details>
     </div>
   )
 }

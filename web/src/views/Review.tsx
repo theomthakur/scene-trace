@@ -19,6 +19,7 @@ export default function Review({ backend }: { backend: Backend }) {
   const [hits, setHits] = useState<Set<string> | null>(null)
   const [notice, setNotice] = useState<{ kind: 'err' | 'info'; text: string } | null>(null)
   const [upl, setUpl] = useState<number | null>(null)
+  const [fileName, setFileName] = useState('')
   const player = useRef<PlayerApi | null>(null); const clientReq = useRef(rid())
 
   const fail = (e: unknown) => setNotice({ kind: 'err', text: errText(e) })
@@ -82,11 +83,16 @@ export default function Review({ backend }: { backend: Backend }) {
 
   return (
     <div className="review">
+      <div className="workspace-intro">
+        <div><p className="eyebrow">INVESTIGATION WORKSPACE <span> / </span> REVIEW</p><h1>See the full story.</h1><p>Explore a recording, review detected events, and trace each finding back to the evidence.</p></div>
+        <div className="workspace-summary"><span className="summary-label">CURRENT RECORDING</span><strong>{video?.display_name ?? 'No recording selected'}</strong><span>{video ? `${fmt(video.duration_ms)} · ${run?.state === 'completed' ? `${events.length} events detected` : 'Ready for review'}` : 'Choose a video to get started'}</span></div>
+      </div>
       {notice && <div className={`notice ${notice.kind}`} role={notice.kind === 'err' ? 'alert' : 'status'}>{notice.text} <button className="link" onClick={() => setNotice(null)}>Dismiss</button></div>}
       <div className="toolbar panel">
+        <div className="toolbar-heading"><span className="step-number">01</span><div><strong>Recording</strong><span>Select a source or upload your own</span></div></div>
         <label>Video <select value={video?.id ?? ''} onChange={e => pick(e.target.value)} disabled={!videos.length}>{!videos.length && <option>No videos yet</option>}{videos.map(v => <option key={v.id} value={v.id}>{v.display_name} ({fmt(v.duration_ms)})</option>)}</select></label>
         <form className="upload" onSubmit={upload}>
-          <label className="file">Upload <input name="file" type="file" accept="video/*,.mkv,.webm" disabled={demo} /></label>
+          <label className={`file-picker${demo ? ' is-disabled' : ''}`}><span className="file-picker-label">Video file</span><span className="file-picker-button"><span aria-hidden="true">↑</span> {fileName || 'Choose video'}</span><input name="file" type="file" accept="video/*,.mkv,.webm" disabled={demo} onChange={e => setFileName(e.target.files?.[0]?.name ?? '')} /></label>
           <label>Name <input name="name" type="text" maxLength={200} disabled={demo} /></label>
           <button className="btn" disabled={demo || upl !== null} title={demo ? 'Static demo is read only' : undefined}>Upload</button>
           {upl !== null && <progress value={upl} max={1} aria-label="Upload progress" />}
@@ -95,9 +101,8 @@ export default function Review({ backend }: { backend: Backend }) {
       {!video && <p className="empty big">{demo ? 'Loading the demo bundle...' : 'Upload a video (up to 250 MiB and 5 minutes) to begin.'}</p>}
       {video && <div className="grid">
         <div className="col-main">
-          <section className="panel" aria-labelledby="player-h">
-            <h2 id="player-h">{video.display_name}</h2>
-            <p className="muted">{video.width}x{video.height}, {fmt(video.duration_ms)}, {video.codec}, SHA-256 {video.source_sha256.slice(0, 12)}...</p>
+          <section className="panel player-panel" aria-labelledby="player-h">
+            <div className="section-heading"><div><p className="eyebrow">FOOTAGE</p><h2 id="player-h">{video.display_name}</h2></div><span className="footage-meta">{fmt(video.duration_ms)} · {video.width} × {video.height}</span></div>
             <Player video={video} src={video.media_url} idx={idx} zones={zones} showOverlay={overlay} toleranceMs={tolerance} draftPoints={draft} onDraftPoint={p => setDraft(d => [...(d ?? []), p])} onClosePolygon={finishPolygon}
               highlightTracks={selected?.track_ids ?? []} onTime={setT} apiRef={player} />
             <div className="row">
@@ -107,7 +112,9 @@ export default function Review({ backend }: { backend: Backend }) {
             <Timeline durationMs={video.duration_ms} events={visible} currentMs={t} selectedId={selected?.id ?? null} onSelect={select} onSeek={seek} />
           </section>
 
-          <section className="panel" aria-labelledby="zones-h">
+          <details className="panel setup-panel" open={!demo}>
+            <summary><span className="step-number">02</span><span><strong>Set up scene zones</strong><small>Define the areas you want to monitor</small></span><span className="setup-count">{zones.length} zones</span></summary>
+          <section aria-labelledby="zones-h">
             <h2 id="zones-h">Scene zones {zoneVersion ? <span className="count">v{zoneVersion}</span> : null}{dirty && <span className="pill flag">unsaved</span>}</h2>
             <p className="muted">Zones use normalized coordinates. A restricted zone tests the bottom-centre of each box (ground contact proxy). A passage zone tests 2D box overlap, not physical clearance.</p>
             <div className="row">
@@ -125,8 +132,11 @@ export default function Review({ backend }: { backend: Backend }) {
             {draft && <p className="notice info" role="status">Drawing: click on the video to add points ({draft.length} so far), double-click or press Finish when there are at least 3.</p>}
             <ul className="zlist">{zones.map(z => <li key={z.id}><span className={`dot ${z.role}`} />{z.name} <span className="muted">({z.role}, {z.polygon.length} points)</span>{!demo && <button className="link" onClick={() => { setZones(zones.filter(x => x.id !== z.id)); setDirty(true) }}>Remove</button>}</li>)}</ul>
           </section>
+          </details>
 
-          <section className="panel" aria-labelledby="run-h">
+          <details className="panel setup-panel" open={!demo}>
+            <summary><span className="step-number">03</span><span><strong>Process recording</strong><small>Run analysis and access your report</small></span><span className="setup-count">{run?.state ?? 'Not started'}</span></summary>
+          <section aria-labelledby="run-h">
             <h2 id="run-h">Processing</h2>
             <div className="row">
               <button className="btn primary" onClick={process} disabled={demo || !!running || zones.length === 0 || dirty || !zoneVersion} title={dirty ? 'Save zones first' : undefined}>Process video</button>
@@ -146,6 +156,7 @@ export default function Review({ backend }: { backend: Backend }) {
               {flags.length > 0 && run.state !== 'completed' && <p className="muted">Flags: {flags.join(', ')}</p>}
             </div>}
           </section>
+          </details>
         </div>
         <div className="col-side">
           {run?.state === 'completed' && <EventList events={events} hits={hits} selectedId={selected?.id ?? null} onSelect={select} backend={backend} runId={run.id} onSearchResults={setHits} />}
