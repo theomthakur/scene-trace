@@ -10,3 +10,4 @@ web/dist/
 web/public/demo/
 web/e2e/last.png
 web/e2e/last-results.json
+IMPLEMENTATION-STATUS.md

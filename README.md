@@ -63,7 +63,7 @@ The current rules flag restricted-zone entry, stationary objects and possible pa
 
 The application uses a pretrained COCO detector and a custom tracking baseline; the model was not trained or fine-tuned in this project. The tracker can lose or split identities, especially in crowded scenes, and the detector can miss or misclassify objects.
 
-The recorded evaluation uses generated fixtures and **two independent real-video recordings**. The real-footage test is very small and was not blind, so its results do not establish performance on new environments. See the Evaluation page and [implementation status](IMPLEMENTATION-STATUS.md) for counts, methods and known gaps. A run with no findings does not certify that a video is incident-free.
+The recorded evaluation uses generated fixtures and **two independent real-video recordings**. The real-footage test is very small and was not blind, so its results do not establish performance on new environments. See the Evaluation page, [data card](docs/DATA-CARD.md) and [model card](docs/MODEL-CARD.md) for scope and known gaps. A run with no findings does not certify that a video is incident-free.
 
 SceneTrace does not identify people, determine intent or blame, or make safety-compliance decisions. Semantic embeddings, video-language explanations, cross-camera tracking, model fine-tuning and cloud deployment are not implemented.
 
