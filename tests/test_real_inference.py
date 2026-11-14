@@ -59,3 +59,17 @@ def test_real_clip_embeddings_are_normalised_and_separate_obvious_colours():
     assert img.shape == (2, 512) and txt.shape == (2, 512) and np.allclose(np.linalg.norm(img, axis=1), 1, atol=1e-4)
     sims = txt @ img.T
     assert sims[0, 0] > sims[0, 1] and sims[1, 1] > sims[1, 0]          # each colour word is closer to its own colour
+
+
+# ---------------- explanations (real model) ----------------
+def test_real_vlm_describes_a_crop_and_the_checks_run_on_its_text(tmp_path):
+    """Loads SmolVLM-500M and describes one real event crop. Asserts the plumbing, not the quality: text exists, is stored with its prompt hash, and flags are a list."""
+    import json as _json
+    from video_investigator.explain import vlm
+    from video_investigator.runner import process_video, zones_from_dicts
+    res = process_video(CLIP, zones_from_dicts(_json.loads(ZONES.read_text())), load_settings(), tmp_path, max_frames=40, make_clips=False)
+    events = [e for e in res["events"] if e["evidence"]["frames"]]
+    assert events, "the first 8 seconds of the pedestrian clip should produce at least one event"
+    out = vlm.explain(res["attempt_dir"], events[0], res["observations"], vlm.SmolVlmExplainer())
+    assert isinstance(out["text"], str) and len(out["text"]) > 5 and len(out["prompt_sha256"]) == 64 and isinstance(out["flags"], list)
+    assert out["model"]["source"] == "model" and out["status"] in ("ok", "flagged") and "unverified" in out["disclaimer"]

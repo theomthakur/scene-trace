@@ -43,3 +43,14 @@ class SemanticSearchBody(BaseModel):
 
 class ExplainBody(BaseModel):
     frames: list[Literal["start", "mid", "end"]] = Field(default_factory=lambda: ["mid"], min_length=1, max_length=3)
+
+
+class CrossCamBody(BaseModel):
+    run_a: str
+    run_b: str
+    offset_b_s: float = Field(description="Seconds after video A's time 0 at which video B's time 0 occurs on a shared clock. Required: the platform never guesses camera timing.")
+    min_gap_s: float = Field(default=0.0, ge=0)
+    max_gap_s: float = Field(default=60.0, gt=0)
+    threshold: float | None = Field(default=None, ge=-1, le=1)
+    margin: float | None = Field(default=None, ge=0)
+    class_name: str | None = None

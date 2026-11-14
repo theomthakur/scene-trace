@@ -48,7 +48,7 @@ try {
   check('zones saved as version 1', true)
   await clickText('Draw zone'); box = await canvasBox(); await page.mouse.click(box.x + 0.1 * box.w, box.y + 0.1 * box.h); await sleep(150)
   check('a clicked point is counted', await hasInfo('1 so far'))
-  await page.mouse.click(box.x + 2, box.y + 2)   // far corner of the stage: inside the video content here (no bars), so it must count
+  await page.mouse.click(box.x + 0.06 * box.w, box.y + 0.06 * box.h)   // not the extreme corner: the stage has rounded corners   // far corner of the stage: inside the video content here (no bars), so it must count
   await sleep(150); check('a second point is counted', await hasInfo('2 so far'))
   await clickText('Undo'); await sleep(150)
   check('undo removes the last drawn point', await hasInfo('1 so far'))
@@ -98,11 +98,11 @@ try {
 
   // search
   await page.type('#q', 'person entering restricted zone'); await page.keyboard.press('Enter'); await sleep(900)
-  check('text search shows what was understood', (await page.$eval('.search + .notice', e => e.textContent)).includes('Understood'))
+  check('text search shows what was understood', (await page.$$eval('.event-panel .notice', n => n.some(x => x.textContent.includes('Understood')))))
   await page.$eval('#q', e => { e.value = '' }); await page.focus('#q')
   await page.evaluate(() => { const i = document.querySelector('#q'); const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; s.call(i, 'unattended bag'); i.dispatchEvent(new Event('input', { bubbles: true })) })
   await page.keyboard.press('Enter'); await sleep(900)
-  check('unsupported query shows a notice and no events', (await page.$eval('.search + .notice', e => e.textContent)).includes('Unattended') && (await page.$$eval('ul.events li', l => l.length)) === 0)
+  check('unsupported query shows a notice and no events', (await page.$$eval('.event-panel .notice', n => n.some(x => x.textContent.includes('Unattended')))) && (await page.$$eval('ul.events li', l => l.length)) === 0)
 
   // export
   const runId = await page.evaluate(async () => (await (await fetch('/api/runs')).json()).runs[0].id)
@@ -111,7 +111,7 @@ try {
   check('HTML report endpoint', (await page.evaluate(async id => (await fetch(`/api/runs/${id}/report?format=html`)).status, runId)) === 200)
 
   // other views
-  for (const [h, title] of [['#/evaluation', 'Evaluation'], ['#/system-design', 'System design']]) { await page.goto(`${BASE}/${h}`, { waitUntil: 'networkidle0' }); await sleep(300); check(`view ${h}`, (await text('h1')).includes(title)) }
+  for (const [h, title] of [['#/evaluation', 'Results with'], ['#/system-design', 'From footage to']]) { await page.goto(`${BASE}/${h}`, { waitUntil: 'networkidle0' }); await sleep(600); check(`view ${h}`, (await text('h1')).includes(title)) }   // headings were redesigned by a later UI pass
 
   // narrow viewport
   await page.setViewport({ width: 390, height: 800 }); await page.goto(`${BASE}/#/review`, { waitUntil: 'networkidle0' }); await sleep(900)

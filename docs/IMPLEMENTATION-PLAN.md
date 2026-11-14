@@ -17,3 +17,14 @@ Audit date: 14 November 2026. Baseline at the start: 64 offline Python tests and
 - New constants go in `docs/PARAMETER-LEDGER.md` with the reason they were chosen.
 - `IMPLEMENTATION-STATUS.md` stays local and git-ignored.
 - Each stage ends with tests run and results recorded in the relevant doc, including what failed.
+
+
+## Outcome (14 November 2026)
+| # | Item | Result |
+|---|---|---|
+| 1 | Deployment readiness | Built and checked locally; nothing deployed. See `docs/DEPLOYMENT.md`. Docker image built and smoke-tested on aarch64 only. |
+| 2 | Semantic search | Built and tested with the real CLIP model. 8 of 11 labelled queries ranked the right event first. |
+| 3 | Descriptions | Built and tested with the real model. Quality is poor (3 of 21 mostly supported); labelled unverified, never alters events. |
+| 4 | Fine-tuning | Working, tested path. Held-out test: helmet AP50 0.685, head 0.497 (baseline cannot detect them); person 0.004 against 0.011 (no improvement on the shared class). |
+| 5 | Benchmark expansion | 3 additional recordings, 1 annotated event. test-2 is negative-only and the detector found nothing in it. Far short of 12 recordings. |
+| 6 | Cross-camera | Workflow, API and synthetic tests done. Real-data negative controls show generic embeddings are a weak basis. True accuracy not measured: no labelled multi-camera data. |

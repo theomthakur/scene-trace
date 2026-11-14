@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
 COPY pyproject.toml ./
 COPY src ./src
 COPY config ./config
+COPY docs/evidence ./docs/evidence
 RUN pip install --no-cache-dir --no-deps -e .
 COPY --from=web /app/web/dist ./web/dist
 RUN useradd --create-home --uid 10001 app && mkdir -p /data && chown app:app /data

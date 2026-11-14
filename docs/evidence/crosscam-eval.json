@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-11-14T17:40:32Z",
+  "descriptor": {
+    "model": "laion/CLIP-ViT-B-32-laion2B-s34B-b79K",
+    "revision": "1a25a446712ba5ee05982a381eed697ef9b435cf",
+    "crops_per_track": 6,
+    "pooling": "mean, L2-normalised"
+  },
+  "clips": {
+    "pedestrian_area": {
+      "class": "person",
+      "tracks_used": 45,
+      "covisible_negative_pairs": {
+        "n": 221,
+        "mean": 0.8501,
+        "p50": 0.8616,
+        "p95": 0.9459,
+        "max": 0.9647
+      },
+      "same_track_halves_positive_proxy": {
+        "n": 43,
+        "mean": 0.8829,
+        "p50": 0.8838,
+        "p95": 0.932,
+        "max": 0.984
+      },
+      "by_threshold": [
+        {
+          "threshold": 0.7,
+          "false_match_rate_covisible": 0.9819,
+          "false_matches": 217,
+          "same_track_recall_proxy": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "false_match_rate_covisible": 0.8959,
+          "false_matches": 198,
+          "same_track_recall_proxy": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "false_match_rate_covisible": 0.7602,
+          "false_matches": 168,
+          "same_track_recall_proxy": 0.9767
+        },
+        {
+          "threshold": 0.85,
+          "false_match_rate_covisible": 0.5701,
+          "false_matches": 126,
+          "same_track_recall_proxy": 0.7907
+        },
+        {
+          "threshold": 0.9,
+          "false_match_rate_covisible": 0.2896,
+          "false_matches": 64,
+          "same_track_recall_proxy": 0.3721
+        },
+        {
+          "threshold": 0.95,
+          "false_match_rate_covisible": 0.0407,
+          "false_matches": 9,
+          "same_track_recall_proxy": 0.0233
+        }
+      ]
+    },
+    "rush_hour": {
+      "class": "car",
+      "tracks_used": 57,
+      "covisible_negative_pairs": {
+        "n": 426,
+        "mean": 0.8653,
+        "p50": 0.8895,
+        "p95": 0.9531,
+        "max": 0.9864
+      },
+      "same_track_halves_positive_proxy": {
+        "n": 47,
+        "mean": 0.9343,
+        "p50": 0.9444,
+        "p95": 0.9757,
+        "max": 0.9772
+      },
+      "by_threshold": [
+        {
+          "threshold": 0.7,
+          "false_match_rate_covisible": 0.9507,
+          "false_matches": 405,
+          "same_track_recall_proxy": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "false_match_rate_covisible": 0.8897,
+          "false_matches": 379,
+          "same_track_recall_proxy": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "false_match_rate_covisible": 0.8216,
+          "false_matches": 350,
+          "same_track_recall_proxy": 0.9787
+        },
+        {
+          "threshold": 0.85,
+          "false_match_rate_covisible": 0.6901,
+          "false_matches": 294,
+          "same_track_recall_proxy": 0.9574
+        },
+        {
+          "threshold": 0.9,
+          "false_match_rate_covisible": 0.4202,
+          "false_matches": 179,
+          "same_track_recall_proxy": 0.8085
+        },
+        {
+          "threshold": 0.95,
+          "false_match_rate_covisible": 0.0657,
+          "false_matches": 28,
+          "same_track_recall_proxy": 0.4468
+        }
+      ]
+    }
+  },
+  "limits": [
+    "No multi-camera identity ground truth exists here: true cross-camera precision and recall are NOT measured.",
+    "Co-visible pairs are certain negatives; they are the hardest realistic negatives only inside one scene.",
+    "Same-track halves are an easy positive (same camera, same lighting): the recall column is an upper bound.",
+    "General CLIP embeddings are not person re-identification features. Treat any proposed link as a reviewer hint."
+  ]
+}

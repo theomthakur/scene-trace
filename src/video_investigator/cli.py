@@ -86,6 +86,17 @@ def cmd_evaluate(args) -> int:
     return 0
 
 
+def cmd_evaluate_expansion(args) -> int:
+    from .evaluation import benchmark as b
+    rep = b.run_expansion(include_test2=args.include_test2)
+    b.EVIDENCE.mkdir(parents=True, exist_ok=True)
+    (b.EVIDENCE / "benchmark-expansion.json").write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
+    if args.include_test2:
+        b.TEST2_RESULT.write_text(json.dumps({"lane": rep["lanes"]["test_2"], "config_hash": rep["config_hash"], "generated_at": rep["generated_at"]}, indent=2, sort_keys=True, default=float) + "\n")
+    print(json.dumps({"sample_counts": rep["sample_counts"], "lanes": {k: (v.get("metrics") or v.get("status")) for k, v in rep["lanes"].items()}}, indent=2, default=str)[:3000])
+    return 0
+
+
 def cmd_export_demo(args) -> int:
     """Copy one completed run (observations, events, evidence, playable video) into web/public/demo for the static demo mode."""
     import shutil
@@ -121,6 +132,10 @@ def cmd_export_demo(args) -> int:
             if src.is_dir():
                 shutil.copytree(src, ev_dir / e.event_key, dirs_exist_ok=True, ignore=shutil.ignore_patterns("clip.mp4") if args.skip_clips else None)
         evals = {p.stem: json.loads(p.read_text()) for p in evaluations_dir().glob("*.json")}
+        for name in ("semantic-eval", "explanation-eval", "crosscam-eval", "finetune-development", "finetune-test", "benchmark-expansion"):
+            ep = Path(__file__).resolve().parents[2] / "docs" / "evidence" / f"{name}.json"
+            if ep.is_file():
+                evals[name] = json.loads(ep.read_text())
         index = {"name": v.display_name, "video": video, "run": run_d, "zones": run.zones, "events": ev_out, "observations": obs, "evaluations": evals,
                  "generated_at": datetime.now(timezone.utc).isoformat(), "note": "Precomputed static demo. No model runs in this mode."}
     (out / "index.json").write_text(json.dumps(index))
@@ -139,6 +154,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(fn=cmd_process)
     e = sub.add_parser("evaluate", help="run the benchmark: fixtures, development footage and (once, with --include-test) the frozen test split")
     e.add_argument("--include-test", action="store_true"); e.add_argument("--no-sweep", action="store_true"); e.set_defaults(fn=cmd_evaluate)
+    ex = sub.add_parser("evaluate-expansion", help="evaluate the additional recordings (second development set; second test set once, with --include-test2)")
+    ex.add_argument("--include-test2", action="store_true"); ex.set_defaults(fn=cmd_evaluate_expansion)
     x = sub.add_parser("export-demo", help="export a completed run for the static demo mode")
     x.add_argument("--run-id"); x.add_argument("--out", default="web/public/demo"); x.add_argument("--skip-clips", action="store_true", help="leave out the per-event video clips (smaller bundle)")
     x.set_defaults(fn=cmd_export_demo)

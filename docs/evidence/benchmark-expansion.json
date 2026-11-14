@@ -1,0 +1,381 @@
+{
+  "annotation": {
+    "method": "Manual review of raw decoded frames (0.3 to 5 s apart) with only the zone outline drawn. Intervals are visibility intervals.",
+    "reviewer_note": "One reviewer (the implementing assistant), not expert consensus. Not blind to the application's behaviour.",
+    "reviewers": 1,
+    "temporal_match": "same event type and zone, temporal IoU >= 0.5, one-to-one"
+  },
+  "code_commit": "19bb96a4c3a76db53f2be72f6fe1e3fb32244aad",
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "detector": {
+    "base_weights": null,
+    "box_format": "normalized xyxy",
+    "device": "cpu",
+    "name": "fasterrcnn_mobilenet_v3_large_320_fpn",
+    "num_coco_categories": 91,
+    "score_threshold": 0.5,
+    "supported_classes": [
+      "person",
+      "bicycle",
+      "car",
+      "motorcycle",
+      "bus",
+      "truck",
+      "backpack",
+      "handbag",
+      "suitcase"
+    ],
+    "torch": "2.15.0",
+    "torchvision": "0.29.2",
+    "weights": "COCO_V1",
+    "weights_file": "fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth",
+    "weights_sha256": "907ea3f91ff92242bc1baea8049276a3e76bca48ce7560bd268cc029f37977b5",
+    "weights_url": "https://download.pytorch.org/models/fasterrcnn_mobilenet_v3_large_320_fpn-907ea3f9.pth"
+  },
+  "generated_at": "2026-11-14T18:09:50.261341+00:00",
+  "hardware": "arm64 macOS-26.5.1-arm64-arm-64bit, device cpu",
+  "headline": "Additional recordings, reported separately from the first benchmark. Descriptive only.",
+  "lanes": {
+    "development_2": {
+      "baseline_no_persistence": {
+        "metrics": {
+          "false_alerts_per_negative_video_hour": {
+            "false_alerts": 0,
+            "negative_hours": 0.01743,
+            "undefined_reason": null,
+            "value": 0.0
+          },
+          "false_positives": 0,
+          "missed_events": 0,
+          "onset_abs_error_ms_mean": 173.0,
+          "onset_matched_count": 1,
+          "precision": {
+            "denominator": 1,
+            "numerator": 1,
+            "undefined_reason": null,
+            "value": 1.0
+          },
+          "recall": {
+            "denominator": 1,
+            "numerator": 1,
+            "undefined_reason": null,
+            "value": 1.0
+          },
+          "true_positives": 1
+        },
+        "units": [
+          {
+            "clip": "roncesvalles",
+            "false_positives": [],
+            "hours": 0.003631388888888889,
+            "matches": [
+              {
+                "onset_abs_error_ms": 173,
+                "pred": 0,
+                "tiou": 0.6168,
+                "truth": 0
+              }
+            ],
+            "missed": [],
+            "n_pred": 1,
+            "n_truth": 1,
+            "negative": false,
+            "pred": [
+              {
+                "end_ms": 12402,
+                "start_ms": 10827,
+                "track_ids": [
+                  23
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-sidewalk"
+              }
+            ],
+            "truth": [
+              {
+                "end_ms": 13100,
+                "note": "a pedestrian with a stroller enters from the right and walks behind the pole, in the zone to the end of the clip",
+                "start_ms": 11000,
+                "type": "zone_entry",
+                "zone_id": "z-sidewalk"
+              }
+            ],
+            "unit": "d2-sidewalk-person"
+          },
+          {
+            "clip": "dc_crosswalk",
+            "false_positives": [],
+            "hours": 0.017433333333333332,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "d2-dc-negative"
+          }
+        ]
+      },
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.01743,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 0,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": 173.0,
+        "onset_matched_count": 1,
+        "precision": {
+          "denominator": 1,
+          "numerator": 1,
+          "undefined_reason": null,
+          "value": 1.0
+        },
+        "recall": {
+          "denominator": 1,
+          "numerator": 1,
+          "undefined_reason": null,
+          "value": 1.0
+        },
+        "true_positives": 1
+      },
+      "notes": [],
+      "per_clip": {
+        "runs": [
+          {
+            "clip": "roncesvalles",
+            "detections": 276,
+            "observations_sha256": "961ac39c6c4ed60dc533d7080cdc7266c7f6b8c3306a24cb90aa81649397533b",
+            "quality_flags": [],
+            "sampled_frames": 66,
+            "timings": {
+              "detect_ms_per_frame": 69.3,
+              "detect_s": 4.573,
+              "detections": 276,
+              "realtime_factor": 2.782,
+              "sampled_frames": 66,
+              "total_s": 4.676
+            },
+            "tracks": 27
+          },
+          {
+            "clip": "dc_crosswalk",
+            "detections": 20,
+            "observations_sha256": "34a409331283c8eb10c4c1a66bcb7943199d7c5b6799a4b0a3fd669ecc99a514",
+            "quality_flags": [],
+            "sampled_frames": 314,
+            "timings": {
+              "detect_ms_per_frame": 68.4,
+              "detect_s": 21.473,
+              "detections": 20,
+              "realtime_factor": 2.829,
+              "sampled_frames": 314,
+              "total_s": 22.126
+            },
+            "tracks": 9
+          }
+        ],
+        "units": [
+          {
+            "clip": "roncesvalles",
+            "false_positives": [],
+            "hours": 0.003631388888888889,
+            "matches": [
+              {
+                "onset_abs_error_ms": 173,
+                "pred": 0,
+                "tiou": 0.6168,
+                "truth": 0
+              }
+            ],
+            "missed": [],
+            "n_pred": 1,
+            "n_truth": 1,
+            "negative": false,
+            "pred": [
+              {
+                "end_ms": 12402,
+                "start_ms": 10827,
+                "track_ids": [
+                  23
+                ],
+                "type": "zone_entry",
+                "uncertainty_flags": [],
+                "zone_id": "z-sidewalk"
+              }
+            ],
+            "truth": [
+              {
+                "end_ms": 13100,
+                "note": "a pedestrian with a stroller enters from the right and walks behind the pole, in the zone to the end of the clip",
+                "start_ms": 11000,
+                "type": "zone_entry",
+                "zone_id": "z-sidewalk"
+              }
+            ],
+            "unit": "d2-sidewalk-person"
+          },
+          {
+            "clip": "dc_crosswalk",
+            "false_positives": [],
+            "hours": 0.017433333333333332,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "d2-dc-negative"
+          }
+        ]
+      },
+      "scope": "2 source recording(s): roncesvalles, dc_crosswalk. 1 annotated events across 2 evaluation units (1 negative). Real pixel inference with pretrained COCO weights.",
+      "status": "evaluated"
+    },
+    "test_2": {
+      "baseline_no_persistence": {
+        "metrics": {
+          "false_alerts_per_negative_video_hour": {
+            "false_alerts": 0,
+            "negative_hours": 0.0101,
+            "undefined_reason": null,
+            "value": 0.0
+          },
+          "false_positives": 0,
+          "missed_events": 0,
+          "onset_abs_error_ms_mean": null,
+          "onset_matched_count": 0,
+          "precision": {
+            "denominator": 0,
+            "numerator": 0,
+            "undefined_reason": "no predicted events",
+            "value": null
+          },
+          "recall": {
+            "denominator": 0,
+            "numerator": 0,
+            "undefined_reason": "no ground-truth events",
+            "value": null
+          },
+          "true_positives": 0
+        },
+        "units": [
+          {
+            "clip": "roundabout",
+            "false_positives": [],
+            "hours": 0.010102777777777778,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "t2-roundabout-negative"
+          }
+        ]
+      },
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.0101,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 0,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": null,
+        "onset_matched_count": 0,
+        "precision": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no predicted events",
+          "value": null
+        },
+        "recall": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no ground-truth events",
+          "value": null
+        },
+        "true_positives": 0
+      },
+      "notes": [],
+      "per_clip": {
+        "runs": [
+          {
+            "clip": "roundabout",
+            "detections": 0,
+            "observations_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "quality_flags": [
+              "sparse_detections"
+            ],
+            "sampled_frames": 182,
+            "timings": {
+              "detect_ms_per_frame": 69.6,
+              "detect_s": 12.672,
+              "detections": 0,
+              "realtime_factor": 2.804,
+              "sampled_frames": 182,
+              "total_s": 12.911
+            },
+            "tracks": 0
+          }
+        ],
+        "units": [
+          {
+            "clip": "roundabout",
+            "false_positives": [],
+            "hours": 0.010102777777777778,
+            "matches": [],
+            "missed": [],
+            "n_pred": 0,
+            "n_truth": 0,
+            "negative": true,
+            "pred": [],
+            "truth": [],
+            "unit": "t2-roundabout-negative"
+          }
+        ]
+      },
+      "scope": "1 source recording(s): roundabout. 0 annotated events across 1 evaluation units (1 negative). Real pixel inference with pretrained COCO weights.",
+      "status": "evaluated"
+    }
+  },
+  "limits": [
+    "Only recordings that pass the fixed-camera test, have a CC0 / public-domain / CC BY / CC BY-SA licence on Wikimedia Commons, and contain nothing violent or sensitive were considered. Most search results failed one of these.",
+    "Roncesvalles: one annotated pedestrian event; the queued vehicles are not annotated because their stationarity cannot be judged reliably from the frames.",
+    "Washington DC crosswalk: a near-empty street. It contributes negative video time only (no annotated positives).",
+    "Roundabout (test-2): an aerial view with only vehicles. It adds negative video time for persons and nothing else: no positives are annotated, so recall on test-2 is undefined. It was chosen and its zone fixed BEFORE any detector ran on it."
+  ],
+  "manifest_sha256": "02198419e0ba8583c581fbf53f377f4ce7b33f4399407b2a960e58737e89b8f6",
+  "not_measured": [
+    "Detection accuracy (mAP) and tracking metrics (ID switches): no ground-truth boxes or tracks were annotated.",
+    "Passage occupancy events on real footage: not annotated.",
+    "Retrieval Recall@k: not evaluated beyond functional tests of the query parser (no relevance-labelled query set).",
+    "Explanation quality: there is no explanation or VLM component.",
+    "Generalisation: two CC0 clips (one outdoor pedestrian scene, one traffic scene) cannot represent warehouses or indoor aisles.",
+    "Human review time and usefulness: no user study was done."
+  ],
+  "sample_counts": {
+    "development-2": {
+      "annotated_events": 1,
+      "evaluation_units": 2,
+      "negative_units": 1,
+      "recordings": 2,
+      "video_seconds": 75.8
+    },
+    "test-2": {
+      "annotated_events": 0,
+      "evaluation_units": 1,
+      "negative_units": 1,
+      "recordings": 1,
+      "video_seconds": 36.4
+    }
+  }
+}

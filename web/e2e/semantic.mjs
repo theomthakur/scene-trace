@@ -40,7 +40,7 @@ try {
   await switchMode()
   await setQuery('person entering restricted zone')
   await sleep(900)
-  check('keyword search still works after using semantic', (await p.$eval('.search ~ .notice', e => e.textContent)).includes('Understood'))
+  check('keyword search still works after using semantic', (await p.$$eval('.event-panel .notice', n => n.some(x => x.textContent.includes('Understood')))))
   await p.setRequestInterception(true)
   p.on('request', r => (r.url().includes('/search/semantic')
     ? r.respond({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { code: 'semantic_unavailable', message: 'The embedding model could not be loaded: offline. Structured search still works.' } }) })

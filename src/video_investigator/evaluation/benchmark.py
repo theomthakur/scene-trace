@@ -17,6 +17,9 @@ from .fixtures import FRAME, scenarios
 from .matching import match, summarize
 
 BENCH = REPO / "fixtures" / "benchmark"
+EXPANSION_MANIFEST = BENCH / "manifest_expansion.json"          # additional recordings; the original manifest and its freeze are never edited
+FREEZE_2 = BENCH / "FREEZE-2.json"
+TEST2_RESULT = EVIDENCE_DIR = REPO / "docs" / "evidence" / "test2-results.json"
 CLIPS = REPO / "var" / "candidates"
 EVIDENCE = REPO / "docs" / "evidence"
 TEST_RESULT = EVIDENCE / "test-results.json"
@@ -42,16 +45,21 @@ def baseline_settings(s: Settings) -> Settings:
                                                                  "stationary": {**s.events.stationary.model_dump(), "duration_s": 1.0 / s.processing.sample_fps}}})
 
 
-def load_manifest() -> dict:
-    return json.loads((BENCH / "manifest.json").read_text())
+def load_manifest(path: Path | None = None) -> dict:
+    return json.loads((path or BENCH / "manifest.json").read_text())
+
+
+def clip_path(name: str) -> Path:
+    """Original benchmark clips live in var/candidates; the additional recordings in var/candidates/new."""
+    return CLIPS / name if (CLIPS / name).is_file() else CLIPS / "new" / name
 
 
 def verify_sources(manifest: dict, split: str) -> list[dict]:
     srcs = [s for s in manifest["sources"] if s["split"] == split]
     for s in srcs:
-        p = CLIPS / s["file"]
+        p = clip_path(s["file"])
         if not p.is_file() or hashlib.sha1(p.read_bytes()).hexdigest() != s["sha1"]:
-            raise SystemExit(f"Missing or changed clip {s['file']}. Run: python scripts/fetch_demo_media.py")
+            raise SystemExit(f"Missing or changed clip {s['file']}. Original clips: python scripts/fetch_demo_media.py. Additional clips: python scripts/fetch_candidates.py <harvest index> (see the manifest's source_page).")
     return srcs
 
 
@@ -71,7 +79,7 @@ def real_lane(manifest: dict, split: str, settings: Settings, detector: Detector
     base = baseline_settings(settings)
     per, per_b, run_info = [], [], []
     for s in srcs:
-        v = CLIPS / s["file"]; info = probe(v)
+        v = clip_path(s["file"]); info = probe(v)
         zones = zones_from_dicts(json.loads((BENCH / s["zones"]).read_text()))
         det = run_detection(v, info, settings, detector)
         start, end = det.sampled_times_ms[0], det.sampled_times_ms[-1]
@@ -114,7 +122,7 @@ def sweep(manifest: dict, base: Settings, detector_factory) -> list[dict]:
                         ("5 fps, threshold 0.30", {"detector": {"score_threshold": 0.30}}), ("5 fps, threshold 0.70", {"detector": {"score_threshold": 0.70}})]:
         s = load_settings(overrides=over or None); det = detector_factory(s); tracks = dets = evs = 0; tot = 0.0
         for src in srcs:
-            v = CLIPS / src["file"]; info = probe(v); zones = zones_from_dicts(json.loads((BENCH / src["zones"]).read_text()))
+            v = clip_path(src["file"]); info = probe(v); zones = zones_from_dicts(json.loads((BENCH / src["zones"]).read_text()))
             d = run_detection(v, info, s, det)
             ev = detect_events(d.observations, zones, s, d.frame_size, video_start_ms=d.sampled_times_ms[0], video_end_ms=d.sampled_times_ms[-1], source=d.source)
             u = _unit_results(src, [e.to_dict() for e in ev], info.duration_ms / 3.6e6)
@@ -153,3 +161,24 @@ def run_evaluation(include_test: bool, with_sweep: bool = True) -> dict:
            "lanes": lanes, "sweep": sw, "sweep_note": "Development clip only (one source). It describes how counts move with sampling and threshold; it cannot establish an optimum, and defaults were not changed on this basis." if sw else None,
            "not_measured": NOT_MEASURED, "elapsed_s": round(time.time() - t0, 1)}
     return rep
+
+
+def run_expansion(include_test2: bool) -> dict:
+    """Evaluate the ADDITIONAL recordings (manifest_expansion.json): a second development set, and a second test set that is frozen separately and evaluated once.
+    The first benchmark (two recordings, test already used) is not touched, not pooled and not re-run here."""
+    if include_test2 and TEST2_RESULT.exists():
+        raise SystemExit(f"The second test set was already evaluated ({TEST2_RESULT}). It must not be re-run or tuned against.")
+    settings = load_settings(); manifest = load_manifest(EXPANSION_MANIFEST); detector = Detector(settings)
+    if include_test2:
+        fr = json.loads(FREEZE_2.read_text())
+        if fr["config_hash"] != settings.config_hash() or fr["manifest_sha256"] != hashlib.sha256(EXPANSION_MANIFEST.read_bytes()).hexdigest():
+            raise SystemExit("The configuration or the expansion manifest changed after the freeze. The second test set cannot be evaluated against a different setup.")
+    lanes = {"development_2": real_lane(manifest, "development-2", settings, detector)}
+    lanes["test_2"] = real_lane(manifest, "test-2", settings, detector) if include_test2 else {"status": "not_evaluated", "reason": "Run once with --include-test2 after the configuration is frozen."}
+    srcs = manifest["sources"]
+    return {"headline": "Additional recordings, reported separately from the first benchmark. Descriptive only.", "generated_at": datetime.now(timezone.utc).isoformat(), "config_hash": settings.config_hash(),
+            "manifest_sha256": hashlib.sha256(EXPANSION_MANIFEST.read_bytes()).hexdigest(), "code_commit": git_commit(), "detector": detector.info(), "hardware": f"{platform.machine()} {platform.platform()}, device {detector.device}",
+            "sample_counts": {s: {"recordings": sum(1 for x in srcs if x["split"] == s), "annotated_events": sum(len(u["truth"]) for x in srcs if x["split"] == s for u in x["units"]),
+                                  "evaluation_units": sum(len(x["units"]) for x in srcs if x["split"] == s), "negative_units": sum(1 for x in srcs if x["split"] == s for u in x["units"] if not u["truth"]),
+                                  "video_seconds": round(sum(x["duration_ms"] for x in srcs if x["split"] == s) / 1000, 1)} for s in ("development-2", "test-2")},
+            "annotation": manifest["annotation"], "lanes": lanes, "not_measured": NOT_MEASURED, "limits": manifest.get("limits", [])}

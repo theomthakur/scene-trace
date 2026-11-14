@@ -23,3 +23,13 @@ Splits are by source scene: no scene appears in both. The brief's goal was twelv
 
 ## Privacy and ethics
 The clips show people in public places and a legible licence plate. Track IDs are temporary labels within one run. No face recognition, plate reading or re-identification exists in the code.
+
+
+## Additional data
+**Retrieval and description corpora:** the 21 events from the two benchmark clips (7 pedestrian_area, 14 rush_hour). Labels: `fixtures/benchmark/semantic_queries.json` (11 queries, relevant and ambiguous events) and `fixtures/benchmark/explanation_rubric.json` (21 ratings with the hash of the rated text). One annotator, who wrote the queries after seeing the crops; ambiguous events were set aside rather than guessed.
+
+**Fine-tuning data:** `Voxel51/hard-hat-detection`, declared CC0-1.0 (a FiftyOne copy of the Kaggle set by andrewmvd, from MakeML). 5,000 labelled 416x416 images; a deterministic 2,000-image subset is used: 1,000 train, 200 validation, 800 test, ordered by SHA-256 of the file name (`fixtures/finetune/split_manifest.json`). Box counts: train 4,028 helmet / 957 head / 169 person; validation 786 / 201 / 16; test 2,881 / 967 / 111. The rights of the underlying photographs are not verified. Images are cached locally and never committed. Penn-Fudan was rejected because its page grants no licence.
+
+**Additional recordings:** see `docs/EVALUATION-EXPANSION.md` and `fixtures/benchmark/manifest_expansion.json`.
+
+**Cross-camera data:** none with identity labels. A CC BY 4.0 UAV re-identification set exists on Hugging Face but has only two identities (its authors), so it cannot support false-association statistics and was not used.

@@ -7,5 +7,4 @@ web/public/demo
 **/__pycache__
 *.pyc
 tests
-docs/evidence
 IMPLEMENTATION-STATUS.md

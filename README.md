@@ -12,6 +12,15 @@ The application runs a pretrained object detector on video frames, tracks object
 - Explore evaluation results and the system design within the application.
 - Export an investigation report as HTML, Markdown or JSON.
 
+## Optional capabilities
+
+Each is optional: if its model is missing or switched off, the rest of the application is unaffected.
+
+- **Semantic search.** Describe what you are looking for ("red car", "person carrying a shopping bag"). A CLIP model ranks events by how well their saved frames and crops match. Structured filters (type, class, zone, time) apply first. The score is a ranking aid, not a confidence, and every result names the frame, crop and timestamp it came from. On 11 labelled queries over 21 events from two clips, the right event was ranked first for 8 and in the top three for 10; ordering by time found it first for 2.
+- **Descriptions.** A small open vision-language model (SmolVLM-500M) can describe an event's saved frame. Each description shows the evidence it used and automatic checks, and is labelled unverified. It never changes an event, a review or a report. Measured honestly: of 21 descriptions, 3 were mostly supported by the frame, 12 mixed real and invented details, and 6 were mostly unsupported. Licence plates the model reads aloud are redacted.
+- **Cross-camera association.** `POST /api/crosscam/associate` proposes candidate links between tracks from two runs, using timing and appearance. It is a hint for a reviewer, never an identification. Generic image embeddings turned out to be a weak basis: at a moderate threshold they linked most different people in the same scene, so the default threshold is strict and proposes very little. True cross-camera accuracy is **not measured** because no multi-camera identity labels are available.
+- **Fine-tuning.** `python -m video_investigator.training.finetune` fine-tunes the detector heads on a CC0-declared worksite dataset (helmet, head, person) and compares the result with the pretrained baseline on a held-out test. The default detector is unchanged; a fine-tuned checkpoint is opt-in through `VI_DETECTOR_CHECKPOINT`. On a held-out 800-image test it reached helmet AP50 0.69 and head 0.50 (classes the pretrained model cannot detect at all) but did not improve the one shared class, person, where both models score near zero. One seed, CPU, five to fourteen minutes per run. Details: [docs/FINETUNING.md](docs/FINETUNING.md).
+
 ## Run locally
 
 The current setup was tested on an Apple M4 Mac using CPU inference. You need Python 3.11, Node.js 20 or later, `uv`, and FFmpeg with H.264 encoding support. The first model download requires an internet connection.
@@ -45,7 +54,9 @@ After completing a local run, create a demo bundle with:
 python -m video_investigator.cli export-demo
 ```
 
-Then open `http://127.0.0.1:5173/?mode=demo`. The demo shows saved results and does not run the model. The bundle is local and ignored by Git. The project is not yet configured for a Vercel deployment.
+Then open `http://127.0.0.1:5173/?mode=demo`. The demo shows saved results and does not run any model. The bundle is local and ignored by Git.
+
+To build a deployable static site, run `scripts/build_demo.sh` (output in `web/dist`, with production security headers) and preview it with `python scripts/serve_static.py web/dist`. A Docker image and compose file run the live backend. Both were built and checked locally; **nothing has been deployed**. Configuration, storage, resource needs and costs are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## How it works
 
@@ -61,17 +72,18 @@ The current rules flag restricted-zone entry, stationary objects and possible pa
 
 ## Results and limitations
 
-The application uses a pretrained COCO detector and a custom tracking baseline; the model was not trained or fine-tuned in this project. The tracker can lose or split identities, especially in crowded scenes, and the detector can miss or misclassify objects.
+The default detector is a pretrained COCO model and the tracker is a custom baseline. The fine-tuning workflow produced a separate, opt-in checkpoint; it is not used unless you ask for it. The tracker can lose or split identities, especially in crowded scenes, and the detector can miss or misclassify objects.
 
-The recorded evaluation uses generated fixtures and **two independent real-video recordings**. The real-footage test is very small and was not blind, so its results do not establish performance on new environments. See the Evaluation page, [data card](docs/DATA-CARD.md) and [model card](docs/MODEL-CARD.md) for scope and known gaps. A run with no findings does not certify that a video is incident-free.
+The recorded evaluation uses generated fixtures and real recordings: **two** in the first benchmark (frozen, test used once) plus a second development set from additional clips, a second development set and a second, negative-only test set from additional clips (3 recordings, 1 annotated event; see [docs/EVALUATION-EXPANSION.md](docs/EVALUATION-EXPANSION.md)). The real-footage test is very small and was not blind, so its results do not establish performance on new environments. See the Evaluation page, [data card](docs/DATA-CARD.md) and [model card](docs/MODEL-CARD.md) for scope and known gaps. A run with no findings does not certify that a video is incident-free.
 
-SceneTrace does not identify people, determine intent or blame, or make safety-compliance decisions. Semantic embeddings, video-language explanations, cross-camera tracking, model fine-tuning and cloud deployment are not implemented.
+SceneTrace does not identify people, determine intent or blame, or make safety-compliance decisions. Cross-camera linking and descriptions are hints for a human, with measured weaknesses described above. Live hosting beyond one machine, separate frontend and backend hosting, retention policies and backups are not built.
 
 ## Tests
 
 ```bash
-python -m pytest
+python -m pytest                                   # offline suite (fixtures and test doubles; no model downloads)
 cd web && npm test && npm run build
 ```
+Browser flows (real Brave via puppeteer-core, against the running stack): `node web/e2e/browser.mjs <clip>`, `semantic.mjs`, `explain.mjs`, `evaluation.mjs`, and `demo.mjs` (set `UI_URL` and `DEFAULT_DEMO=1` for the static build).
 
 Real-inference tests require the model weights and downloaded clips: `python -m pytest -m real_inference`. They are separate from the offline suite. See [the walkthrough](docs/WALKTHROUGH.md), [parameter ledger](docs/PARAMETER-LEDGER.md), [data card](docs/DATA-CARD.md) and [model card](docs/MODEL-CARD.md) for implementation details.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Backend } from '../api'
+import ExtraEvaluations, { EXTRA_IDS } from './ExtraEvaluations'
 
 type Ratio = { value: number | null; numerator: number; denominator: number; undefined_reason: string | null }
 const pct = (r?: Ratio) => !r ? 'Not evaluated' : r.value === null ? 'Not defined' : `${(r.value * 100).toFixed(0)}%`
@@ -16,18 +17,20 @@ function Lane({ title, label, lane }: { title: string; label: string; lane: any 
 
 export default function Evaluation({ backend }: { backend: Backend }) {
   const [ids, setIds] = useState<string[] | null>(null); const [sel, setSel] = useState(''); const [ev, setEv] = useState<any>(null); const [err, setErr] = useState('')
-  useEffect(() => { backend.evaluations().then(i => { setIds(i); if (i.length) setSel(i[i.length - 1]) }).catch(e => setErr(e.message)) }, [backend])
+  useEffect(() => { backend.evaluations().then(i => { setIds(i); const core = i.filter(x => !(EXTRA_IDS as readonly string[]).includes(x)); if (core.length) setSel(core[core.length - 1]) }).catch(e => setErr(e.message)) }, [backend])
   useEffect(() => { if (sel) backend.evaluation(sel).then(setEv).catch(e => setErr(e.message)) }, [sel, backend])
   if (err) return <p className="notice err">{err}</p>
-  if (ids && ids.length === 0) return <div className="story-page"><h1>Evaluation</h1><p className="empty big">No evaluation report is available yet.</p></div>
+  const core = (ids ?? []).filter(x => !(EXTRA_IDS as readonly string[]).includes(x))
+  if (ids && core.length === 0) return <div className="story-page"><h1>Evaluation</h1><p className="empty big">No evaluation report is available yet.</p></div>
   if (!ev) return <p className="empty big">Loading evaluation...</p>
   return <div className="story-page evaluation-page"><header className="story-hero"><div><p className="eyebrow">MEASURING THE SYSTEM <span> / </span> EVALUATION</p><h1>Results with<br /><em>the full context.</em></h1><p>{ev.headline}</p></div><div className="hero-index"><span>OUR APPROACH</span><strong>Measure clearly.<br />Show the limits.</strong><small>Results from saved evaluation artifacts</small></div></header>
-    {ids && ids.length > 1 && <label>Report <select value={sel} onChange={e => setSel(e.target.value)}>{ids.map(i => <option key={i}>{i}</option>)}</select></label>}
+    {core.length > 1 && <label>Report <select value={sel} onChange={e => setSel(e.target.value)}>{core.map(i => <option key={i}>{i}</option>)}</select></label>}
     <div className="scope-callout"><span aria-hidden="true">i</span><div><strong>How to read these results</strong><p>{ev.scope_warning}</p></div></div>
     <div className="section-title"><div><p className="eyebrow">01 / RESULTS</p><h2>From rules to real footage</h2></div><p>Each dataset is shown separately.</p></div>
     <Lane title="Algorithm fixtures" label="GENERATED TRAJECTORIES · NO DETECTOR" lane={ev.lanes.fixture} />
     <Lane title="Development footage" label="REAL VIDEO · DEVELOPMENT" lane={ev.lanes.development} />
     <Lane title="Frozen test footage" label="REAL VIDEO · TEST" lane={ev.lanes.test} />
+    {ids && <ExtraEvaluations backend={backend} ids={ids} />}
     <details className="technical-details"><summary>Evaluation details and what remains unmeasured <span>+</span></summary><div><p><strong>Annotation:</strong> {ev.annotation.method} ({ev.annotation.reviewers} reviewer; not expert consensus). <strong>Hardware:</strong> {ev.hardware}.</p><p>Detection mAP and tracking metrics have not been measured against ground-truth boxes or tracks.</p><ul>{ev.not_measured.map((n: string) => <li key={n}>{n}</li>)}</ul><p><strong>Sampling-rate sweep:</strong> {ev.sweep_note}</p>{ev.sweep && <table><thead><tr><th>Sampling</th><th>Tracks</th><th>Detections</th><th>Events</th><th>Seconds</th></tr></thead><tbody>{ev.sweep.map((s: any) => <tr key={s.label}><th>{s.label}</th><td>{s.tracks}</td><td>{s.detections}</td><td>{s.events}</td><td>{s.total_s}</td></tr>)}</tbody></table>}<p>Config hash: <code>{ev.config_hash}</code><br />Manifest hash: <code>{ev.manifest_sha256}</code><br />Generated: {ev.generated_at}</p></div></details>
   </div>
 }

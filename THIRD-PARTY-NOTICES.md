@@ -30,5 +30,17 @@ Static-demo bundles exported to `web/public/demo/` (git-ignored) contain frames 
 
 Both PyAV and OpenCV ship their own FFmpeg libraries, so macOS prints an "Class AVFFrameReceiver is implemented in both ..." warning when both are imported. It concerns capture-device classes this project never uses. No crash or wrong output was observed in any test or browser run, but I have not ruled out problems on other platforms.
 
+## Optional models (downloaded on first use; not redistributed here)
+| Item | Detail | Licence status |
+|---|---|---|
+| Semantic search embeddings | `laion/CLIP-ViT-B-32-laion2B-s34B-b79K`, revision `1a25a446712ba5ee05982a381eed697ef9b435cf`, used through `transformers` | Model card metadata: MIT. The model was trained on LAION-2B, a web-scale image collection whose content and rights are not audited here. I chose it over OpenAI's CLIP because the OpenAI model card declares no licence in its metadata. |
+| Video-language explanations | `HuggingFaceTB/SmolVLM-500M-Instruct`, revision `753c1752602b5e739af7a7fa6947a635051897a3` | Model card metadata: Apache-2.0. Output is unverified model text; see `docs/evidence/explanation-eval.json` for measured quality. |
+| Fine-tuning dataset | `Voxel51/hard-hat-detection` (5,000 images with helmet, head and person boxes; a FiftyOne copy of the Kaggle "Hard Hat Detection" set by andrewmvd, originally from MakeML) | Declared CC0-1.0 by the dataset card. **I could not verify the rights of the underlying photographs.** A 2,000-image deterministic subset is cached on the user's machine, used for training and testing, and never committed or redistributed. |
+| Rejected dataset | Penn-Fudan Pedestrian database | Its page grants no licence (only a copyright notice), so it was not used. |
+
+Extra Python dependencies for these features: `transformers`, `huggingface_hub`, `tokenizers`, `safetensors` (Apache-2.0). Docker base images `node:22-slim` (build stage) and `python:3.11-slim` carry their own licences (Node MIT; Python PSF; Debian packages under their respective licences, including FFmpeg built with libx264 under GPL in Debian's build). Not verified in detail: check before distributing an image.
+
+A fine-tuned checkpoint inherits the terms of its base weights (torchvision COCO_V1, unresolved above) and of the training data. It is never committed.
+
 ## Frontend (versions in `web/package-lock.json`)
 React, React DOM, Vite, @vitejs/plugin-react (MIT); TypeScript (Apache-2.0); Vitest (MIT); puppeteer-core (Apache-2.0, dev only).

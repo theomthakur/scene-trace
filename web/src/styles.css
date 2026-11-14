@@ -192,3 +192,8 @@ select { padding-right:38px }
 .explanation.flagged { border-color: var(--warn) }
 .explanation blockquote { margin: 6px 0; padding-left: 10px; border-left: 3px solid #b9c4d8; font-size: 14px }
 .frames.small { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) }
+
+.table-scroll { overflow-x: auto; max-width: 100%; margin: 8px 0 }
+.table-scroll table { margin: 0; min-width: 100% }
+.table-scroll th, .table-scroll td { overflow-wrap: anywhere }
+.table-scroll:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px }

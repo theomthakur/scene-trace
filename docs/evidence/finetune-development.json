@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-11-14T17:41:35Z",
+  "checkpoint_sha256": "9c9fea8743ac3d202a5d8aeb3ad3678c299b01f9c033ac77e46ff150c485ae6f",
+  "code_commit": "1c2c9d6369916586c73616bb1d26ef415dec7a01",
+  "splits": {
+    "val": {
+      "images": 200,
+      "boxes": {
+        "helmet": 786,
+        "head": 201,
+        "person": 16
+      },
+      "finetuned_ap50": {
+        "helmet": {
+          "ap": 0.4215253056477203,
+          "n_gt": 786,
+          "n_pred": 2734
+        },
+        "head": {
+          "ap": 0.3289116375367929,
+          "n_gt": 201,
+          "n_pred": 728
+        },
+        "person": {
+          "ap": 0.007122507122507123,
+          "n_gt": 16,
+          "n_pred": 113
+        }
+      },
+      "pretrained_baseline_ap50": {
+        "helmet": {
+          "ap": null,
+          "n_gt": 786,
+          "note": "not applicable: COCO has no such class, so the baseline cannot detect it"
+        },
+        "head": {
+          "ap": null,
+          "n_gt": 201,
+          "note": "not applicable: COCO has no such class, so the baseline cannot detect it"
+        },
+        "person": {
+          "ap": 0.020710555508676468,
+          "n_gt": 16,
+          "n_pred": 1633,
+          "note": null
+        }
+      },
+      "person_ap50_difference_finetuned_minus_baseline": {
+        "value": -0.013588048386169345,
+        "bootstrap_95": {
+          "low": -0.037436616214408795,
+          "high": -0.0024977695306642694,
+          "resamples": 490
+        }
+      }
+    }
+  },
+  "training": {
+    "config": {
+      "epochs": 6,
+      "batch": 8,
+      "lr": 0.01,
+      "momentum": 0.9,
+      "weight_decay": 0.0005,
+      "seed": 7,
+      "freeze_backbone": true,
+      "score_thresh": 0.05,
+      "iou_thr": 0.5
+    },
+    "best": {
+      "epoch": 5,
+      "train_loss": 0.45,
+      "val_map50": 0.2525,
+      "val_ap50": {
+        "helmet": 0.4215,
+        "head": 0.3289,
+        "person": 0.0071
+      },
+      "seconds": 237.8,
+      "sha256": "9c9fea8743ac3d202a5d8aeb3ad3678c299b01f9c033ac77e46ff150c485ae6f"
+    },
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.4618,
+        "val_map50": 0.1758,
+        "val_ap50": {
+          "helmet": 0.3381,
+          "head": 0.1861,
+          "person": 0.0033
+        },
+        "seconds": 53.3
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.4784,
+        "val_map50": 0.2249,
+        "val_ap50": {
+          "helmet": 0.3868,
+          "head": 0.2806,
+          "person": 0.0074
+        },
+        "seconds": 101.2
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.4665,
+        "val_map50": 0.2517,
+        "val_ap50": {
+          "helmet": 0.4154,
+          "head": 0.3344,
+          "person": 0.0054
+        },
+        "seconds": 147.3
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.4663,
+        "val_map50": 0.2436,
+        "val_ap50": {
+          "helmet": 0.404,
+          "head": 0.3188,
+          "person": 0.008
+        },
+        "seconds": 192.6
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.45,
+        "val_map50": 0.2525,
+        "val_ap50": {
+          "helmet": 0.4215,
+          "head": 0.3289,
+          "person": 0.0071
+        },
+        "seconds": 237.8
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.4458,
+        "val_map50": 0.2513,
+        "val_ap50": {
+          "helmet": 0.424,
+          "head": 0.3224,
+          "person": 0.0075
+        },
+        "seconds": 285.4
+      }
+    ],
+    "train_seconds": 285.4,
+    "hardware": "arm64 macOS-26.5.1-arm64-arm-64bit, torch 2.15.0, device cpu",
+    "frozen_params_unchanged": true
+  },
+  "reading": "One training seed, one split, CPU. helmet and head have no baseline because COCO lacks them, so a large gain there is expected by construction and is not evidence of a better detector. The comparable class is person, which has few boxes; the interval shows how uncertain that comparison is. Fine-tuning on worksite images specialises the model: it no longer reports COCO classes such as car or bicycle."
+}

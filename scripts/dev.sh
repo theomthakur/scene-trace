@@ -7,6 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"
 RUN="$ROOT/var/dev"; mkdir -p "$RUN"
 stop() {
+  pkill -f "$ROOT/web/node_modules/.bin/vite" 2>/dev/null || true      # also catches Vite servers from earlier starts whose PID files were overwritten
   for f in "$RUN"/*.pid; do
     [ -e "$f" ] || continue
     pid="$(cat "$f")"

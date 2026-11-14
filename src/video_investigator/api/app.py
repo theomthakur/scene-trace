@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
-from ..config import Settings, load_settings
+from ..config import REPO, Settings, load_settings
 from ..db import models as m
 from ..db.session import make_engine, migrate, session_factory, session_scope
 from ..events.geometry import validate_polygon
@@ -20,6 +20,7 @@ from ..reports import export
 from ..search import engine as search_engine
 from ..search import semantic
 from ..explain import vlm
+from ..crosscam import associate as xc, descriptors as xd
 from ..worker import store
 from . import schemas
 from .errors import ApiError, install
@@ -546,6 +547,36 @@ def create_app() -> FastAPI:
             xs = s.scalars(select(m.Explanation).where(m.Explanation.event_id == e.id).order_by(m.Explanation.created_at.desc()))
             return {"event_id": e.id, "explanations": [explanation_out(x, e) for x in xs], "disclaimer": vlm.DISCLAIMER}
 
+    # ---------- cross-camera association (candidate links for a reviewer; never an identification) ----------
+    def run_tracklets(s, r: m.Run, camera: str, offset_s: float, embedder, cls: str | None):
+        v = s.get(m.Video, r.video_id); attempt = (data_dir() / r.manifest_rel).parent
+        obs = [json.loads(x) for x in (attempt / "observations.jsonl").read_text().splitlines()]
+        tracks = xd.track_observations(obs, min_obs=3, classes=[cls] if cls else None)
+        crops = xd.embed_track_crops(data_dir() / v.original_rel, obs, embedder, tracks, k=6)
+        return xd.to_tracklets(camera, tracks, crops, offset_s)
+
+    @app.post("/api/crosscam/associate")
+    def crosscam(body: schemas.CrossCamBody):
+        if body.run_a == body.run_b:
+            raise ApiError(422, "same_run", "Cross-camera association needs two different runs (two cameras).")
+        with session_scope(F()) as s:
+            ra, rb = completed_run(s, body.run_a), completed_run(s, body.run_b)
+            embedder = get_embedder()
+            A = run_tracklets(s, ra, body.run_a, 0.0, embedder, body.class_name); B = run_tracklets(s, rb, body.run_b, body.offset_b_s, embedder, body.class_name)
+            p = xc.Params(min_gap_s=body.min_gap_s, max_gap_s=body.max_gap_s, **({"threshold": body.threshold} if body.threshold is not None else {}), **({"margin": body.margin} if body.margin is not None else {}))
+            res = xc.associate(A, B, p)
+            fwd = res
+            # also try B -> A (camera B's object may appear first): swap roles when B starts before A ends
+            rev = xc.associate(B, A, p)
+            out = [{"from": {"run_id": x.a.camera, "track_id": x.a.track_id, "class_name": x.a.class_name, "start_s": round(x.a.start_s, 2), "end_s": round(x.a.end_s, 2)},
+                    "to": {"run_id": x.b.camera, "track_id": x.b.track_id, "class_name": x.b.class_name, "start_s": round(x.b.start_s, 2), "end_s": round(x.b.end_s, 2)},
+                    "similarity": x.similarity, "margin": x.margin if x.margin != float("inf") else None, "gap_s": x.gap_s, "note": x.note} for x in sorted(fwd + rev, key=lambda y: -y.similarity)]
+            return {"associations": out, "parameters": {"threshold": p.threshold, "margin": p.margin, "min_gap_s": p.min_gap_s, "max_gap_s": p.max_gap_s, "offset_b_s": body.offset_b_s},
+                    "tracks_considered": {"run_a": len(A), "run_b": len(B)}, "descriptor_model": {"name": embedder.name, "source": embedder.source},
+                    "label": xc.LABEL,
+                    "warnings": ["Generic image embeddings are not person re-identification features. On the benchmark footage they linked many different people at moderate thresholds (see docs/evidence/crosscam-eval.json), so the default threshold is strict and proposes very little.",
+                                 "True cross-camera accuracy has not been measured: no multi-camera identity labels exist in this project.", "Treat every row as a hint for a human to check, never as an identification."]}
+
     # ---------- review ----------
     @app.put("/api/events/{event_id}/review")
     def review(event_id: str, body: schemas.ReviewPut):
@@ -591,9 +622,17 @@ def create_app() -> FastAPI:
         return rep
 
     # ---------- evaluations ----------
+    # Committed evidence reports that the Evaluation view may show. An explicit allow-list: nothing else under docs/evidence is served.
+    EVIDENCE_EVALS = ("semantic-eval", "explanation-eval", "crosscam-eval", "finetune-development", "finetune-test", "benchmark-expansion")
+
+    def evidence_path(eval_id: str):
+        p = REPO / "docs" / "evidence" / f"{eval_id}.json"
+        return p if eval_id in EVIDENCE_EVALS and p.is_file() else None
+
     @app.get("/api/evaluations")
     def list_evals():
-        return {"evaluations": sorted(p.stem for p in evaluations_dir().glob("*.json"))}
+        ids = {p.stem for p in evaluations_dir().glob("*.json")} | {i for i in EVIDENCE_EVALS if evidence_path(i)}
+        return {"evaluations": sorted(ids)}
 
     @app.get("/api/evaluations/{eval_id}")
     def get_eval(eval_id: str):
@@ -601,6 +640,8 @@ def create_app() -> FastAPI:
             raise ApiError(404, "evaluation_not_found", "No such evaluation.")
         p = evaluations_dir() / f"{eval_id}.json"
         if not p.is_file():
+            p = evidence_path(eval_id)
+        if p is None or not p.is_file():
             raise ApiError(404, "evaluation_not_found", "No such evaluation.")
         return json.loads(p.read_text())
 

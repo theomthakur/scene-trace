@@ -1,0 +1,207 @@
+{
+  "generated_at": "2026-11-14T18:05:12Z",
+  "checkpoint_sha256": "ed84da3725ed1ee0512b34bd024c751422b9fadc6b9f9ca39464573e3d8af745",
+  "code_commit": "752ec96df37165e16455ba54cb5bd9ea2e5d6b15",
+  "splits": {
+    "val": {
+      "images": 200,
+      "boxes": {
+        "helmet": 786,
+        "head": 201,
+        "person": 16
+      },
+      "finetuned_ap50": {
+        "helmet": {
+          "ap": 0.6706629719402053,
+          "n_gt": 786,
+          "n_pred": 1968
+        },
+        "head": {
+          "ap": 0.5869050886792506,
+          "n_gt": 201,
+          "n_pred": 522
+        },
+        "person": {
+          "ap": 0.037710787710787716,
+          "n_gt": 16,
+          "n_pred": 133
+        }
+      },
+      "pretrained_baseline_ap50": {
+        "helmet": {
+          "ap": null,
+          "n_gt": 786,
+          "note": "not applicable: COCO has no such class, so the baseline cannot detect it"
+        },
+        "head": {
+          "ap": null,
+          "n_gt": 201,
+          "note": "not applicable: COCO has no such class, so the baseline cannot detect it"
+        },
+        "person": {
+          "ap": 0.020710555508676468,
+          "n_gt": 16,
+          "n_pred": 1633,
+          "note": null
+        }
+      },
+      "person_ap50_difference_finetuned_minus_baseline": {
+        "value": 0.01700023220211125,
+        "bootstrap_95": {
+          "low": -0.014869418275087852,
+          "high": 0.06942582753040794,
+          "resamples": 490
+        }
+      }
+    },
+    "test": {
+      "images": 800,
+      "boxes": {
+        "helmet": 2881,
+        "head": 967,
+        "person": 111
+      },
+      "finetuned_ap50": {
+        "helmet": {
+          "ap": 0.6849240565224443,
+          "n_gt": 2881,
+          "n_pred": 6934
+        },
+        "head": {
+          "ap": 0.4969367749114877,
+          "n_gt": 967,
+          "n_pred": 2108
+        },
+        "person": {
+          "ap": 0.003929514048391152,
+          "n_gt": 111,
+          "n_pred": 585
+        }
+      },
+      "pretrained_baseline_ap50": {
+        "helmet": {
+          "ap": null,
+          "n_gt": 2881,
+          "note": "not applicable: COCO has no such class, so the baseline cannot detect it"
+        },
+        "head": {
+          "ap": null,
+          "n_gt": 967,
+          "note": "not applicable: COCO has no such class, so the baseline cannot detect it"
+        },
+        "person": {
+          "ap": 0.011025659913886836,
+          "n_gt": 111,
+          "n_pred": 6091,
+          "note": null
+        }
+      },
+      "person_ap50_difference_finetuned_minus_baseline": {
+        "value": -0.0070961458654956846,
+        "bootstrap_95": {
+          "low": -0.02245440335621943,
+          "high": -0.001058496848562007,
+          "resamples": 500
+        }
+      }
+    }
+  },
+  "training": {
+    "config": {
+      "epochs": 6,
+      "batch": 8,
+      "lr": 0.005,
+      "momentum": 0.9,
+      "weight_decay": 0.0005,
+      "seed": 7,
+      "freeze_backbone": false,
+      "score_thresh": 0.05,
+      "iou_thr": 0.5,
+      "image_size": 416
+    },
+    "best": {
+      "epoch": 6,
+      "train_loss": 0.5531,
+      "val_map50": 0.4318,
+      "val_ap50": {
+        "helmet": 0.6707,
+        "head": 0.5869,
+        "person": 0.0377
+      },
+      "seconds": 817.5,
+      "sha256": "ed84da3725ed1ee0512b34bd024c751422b9fadc6b9f9ca39464573e3d8af745"
+    },
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.6306,
+        "val_map50": 0.3344,
+        "val_ap50": {
+          "helmet": 0.5743,
+          "head": 0.4198,
+          "person": 0.0093
+        },
+        "seconds": 166.1
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.6327,
+        "val_map50": 0.4029,
+        "val_ap50": {
+          "helmet": 0.6434,
+          "head": 0.555,
+          "person": 0.0104
+        },
+        "seconds": 305.0
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.6073,
+        "val_map50": 0.4047,
+        "val_ap50": {
+          "helmet": 0.6329,
+          "head": 0.548,
+          "person": 0.0333
+        },
+        "seconds": 444.4
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.5843,
+        "val_map50": 0.4176,
+        "val_ap50": {
+          "helmet": 0.6601,
+          "head": 0.5683,
+          "person": 0.0243
+        },
+        "seconds": 570.3
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.5607,
+        "val_map50": 0.4267,
+        "val_ap50": {
+          "helmet": 0.6656,
+          "head": 0.5755,
+          "person": 0.039
+        },
+        "seconds": 696.8
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.5531,
+        "val_map50": 0.4318,
+        "val_ap50": {
+          "helmet": 0.6707,
+          "head": 0.5869,
+          "person": 0.0377
+        },
+        "seconds": 817.5
+      }
+    ],
+    "train_seconds": 817.6,
+    "hardware": "arm64 macOS-26.5.1-arm64-arm-64bit, torch 2.15.0, device cpu",
+    "frozen_params_unchanged": true
+  },
+  "reading": "One training seed, one split, CPU. helmet and head have no baseline because COCO lacks them, so a large gain there is expected by construction and is not evidence of a better detector. The comparable class is person, which has few boxes; the interval shows how uncertain that comparison is. Fine-tuning on worksite images specialises the model: it no longer reports COCO classes such as car or bicycle."
+}

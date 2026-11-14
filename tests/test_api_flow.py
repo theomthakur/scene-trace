@@ -234,3 +234,11 @@ def test_video_without_usable_timing_blocks_run_creation_with_an_actionable_code
         row = s.get(m.Video, v["id"]); row.meta = {**row.meta, "timestamps_ok": False}
     r = client.post("/api/runs", json={"video_id": v["id"]})
     assert r.status_code == 422 and r.json()["error"]["code"] == "unsupported_timing" and "timing" in r.json()["error"]["message"]
+
+
+def test_evaluation_endpoints_serve_only_the_allow_listed_committed_reports(client):
+    ids = client.get("/api/evaluations").json()["evaluations"]
+    assert "semantic-eval" in ids and "explanation-eval" in ids and "crosscam-eval" in ids        # committed evidence is listed
+    assert client.get("/api/evaluations/semantic-eval").json()["queries"] == 11
+    assert client.get("/api/evaluations/g0-doctor-pedestrian_area").status_code == 404              # other files under docs/evidence are not exposed
+    assert client.get("/api/evaluations/..%2Fapp").status_code == 404

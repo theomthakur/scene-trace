@@ -1,0 +1,113 @@
+{
+  "config_hash": "cc3da6c063a4775af195f3283a0ecf67e682c86ad2b1a9bdfb89b52d040baa4e",
+  "generated_at": "2026-11-14T18:09:50.261341+00:00",
+  "lane": {
+    "baseline_no_persistence": {
+      "metrics": {
+        "false_alerts_per_negative_video_hour": {
+          "false_alerts": 0,
+          "negative_hours": 0.0101,
+          "undefined_reason": null,
+          "value": 0.0
+        },
+        "false_positives": 0,
+        "missed_events": 0,
+        "onset_abs_error_ms_mean": null,
+        "onset_matched_count": 0,
+        "precision": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no predicted events",
+          "value": null
+        },
+        "recall": {
+          "denominator": 0,
+          "numerator": 0,
+          "undefined_reason": "no ground-truth events",
+          "value": null
+        },
+        "true_positives": 0
+      },
+      "units": [
+        {
+          "clip": "roundabout",
+          "false_positives": [],
+          "hours": 0.010102777777777778,
+          "matches": [],
+          "missed": [],
+          "n_pred": 0,
+          "n_truth": 0,
+          "negative": true,
+          "pred": [],
+          "truth": [],
+          "unit": "t2-roundabout-negative"
+        }
+      ]
+    },
+    "metrics": {
+      "false_alerts_per_negative_video_hour": {
+        "false_alerts": 0,
+        "negative_hours": 0.0101,
+        "undefined_reason": null,
+        "value": 0.0
+      },
+      "false_positives": 0,
+      "missed_events": 0,
+      "onset_abs_error_ms_mean": null,
+      "onset_matched_count": 0,
+      "precision": {
+        "denominator": 0,
+        "numerator": 0,
+        "undefined_reason": "no predicted events",
+        "value": null
+      },
+      "recall": {
+        "denominator": 0,
+        "numerator": 0,
+        "undefined_reason": "no ground-truth events",
+        "value": null
+      },
+      "true_positives": 0
+    },
+    "notes": [],
+    "per_clip": {
+      "runs": [
+        {
+          "clip": "roundabout",
+          "detections": 0,
+          "observations_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "quality_flags": [
+            "sparse_detections"
+          ],
+          "sampled_frames": 182,
+          "timings": {
+            "detect_ms_per_frame": 69.6,
+            "detect_s": 12.672,
+            "detections": 0,
+            "realtime_factor": 2.804,
+            "sampled_frames": 182,
+            "total_s": 12.911
+          },
+          "tracks": 0
+        }
+      ],
+      "units": [
+        {
+          "clip": "roundabout",
+          "false_positives": [],
+          "hours": 0.010102777777777778,
+          "matches": [],
+          "missed": [],
+          "n_pred": 0,
+          "n_truth": 0,
+          "negative": true,
+          "pred": [],
+          "truth": [],
+          "unit": "t2-roundabout-negative"
+        }
+      ]
+    },
+    "scope": "1 source recording(s): roundabout. 0 annotated events across 1 evaluation units (1 negative). Real pixel inference with pretrained COCO weights.",
+    "status": "evaluated"
+  }
+}

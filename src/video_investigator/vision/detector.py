@@ -4,7 +4,7 @@ If the weights cannot be loaded this raises DetectorError. There is deliberately
 predictions: a missing model must be visible, never silently replaced.
 """
 from __future__ import annotations
-import hashlib
+import hashlib, os
 from dataclasses import dataclass
 from pathlib import Path
 import torch, torchvision
@@ -45,28 +45,41 @@ class Detector:
             raise DetectorError("unsupported_detector", "Only fasterrcnn_mobilenet_v3_large_320_fpn with COCO_V1 weights is wired up.")
         self.cfg = cfg
         self.device = pick_device(cfg.device)
+        self.checkpoint = os.environ.get("VI_DETECTOR_CHECKPOINT") or None      # opt-in fine-tuned weights; not part of the config hash, recorded in every run
         self.weights = FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1
-        try:
-            model = fasterrcnn_mobilenet_v3_large_320_fpn(weights=self.weights, weights_backbone=None, box_score_thresh=min(0.05, cfg.score_threshold))
-        except Exception as e:  # network failure, corrupt download, incompatible state dict
-            raise DetectorError("weights_unavailable", f"Could not load the pretrained weights: {e}")
+        if self.checkpoint:
+            try:
+                from ..training.finetune import load_checkpoint
+                model, ck = load_checkpoint(Path(self.checkpoint))
+            except Exception as e:
+                raise DetectorError("checkpoint_unavailable", f"Could not load the fine-tuned checkpoint {self.checkpoint}: {e}")
+            self.categories = ["__background__", *ck["classes"]]
+            self.checkpoint_meta = ck.get("meta", {})
+        else:
+            try:
+                model = fasterrcnn_mobilenet_v3_large_320_fpn(weights=self.weights, weights_backbone=None, box_score_thresh=min(0.05, cfg.score_threshold))
+            except Exception as e:  # network failure, corrupt download, incompatible state dict
+                raise DetectorError("weights_unavailable", f"Could not load the pretrained weights: {e}")
+            self.categories = list(self.weights.meta["categories"])
+        model.roi_heads.score_thresh = min(0.05, cfg.score_threshold)
         self.model = model.to(self.device).eval()
-        self.categories: list[str] = list(self.weights.meta["categories"])
         unknown = [c for c in cfg.classes if c not in self.categories]
-        if unknown:
+        if unknown and not self.checkpoint:
             raise DetectorError("unknown_class", f"Classes not in the COCO label set: {unknown}")
-        self.allowed = {self.categories.index(c) for c in cfg.classes}
+        self.allowed = {self.categories.index(c) for c in cfg.classes if c in self.categories}
+        if not self.allowed:
+            raise DetectorError("unknown_class", "None of the configured classes exist in this detector's label set.")
         self.threshold = cfg.score_threshold
 
     def weights_path(self) -> Path:
         return Path(torch.hub.get_dir()) / "checkpoints" / Path(self.weights.url).name
 
     def info(self) -> dict:
-        p = self.weights_path()
+        p = Path(self.checkpoint) if self.checkpoint else self.weights_path()
         sha = hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
-        return {"name": self.cfg.name, "weights": "COCO_V1", "weights_url": self.weights.url, "weights_sha256": sha,
-                "weights_file": p.name, "torch": torch.__version__, "torchvision": torchvision.__version__, "device": self.device,
-                "score_threshold": self.threshold, "supported_classes": list(self.cfg.classes),
+        return {"name": self.cfg.name, "weights": "fine-tuned checkpoint (opt-in)" if self.checkpoint else "COCO_V1", "weights_url": None if self.checkpoint else self.weights.url, "weights_sha256": sha,
+                "base_weights": "COCO_V1" if self.checkpoint else None, "weights_file": p.name, "torch": torch.__version__, "torchvision": torchvision.__version__, "device": self.device,
+                "score_threshold": self.threshold, "supported_classes": [self.categories[i] for i in sorted(self.allowed)],
                 "num_coco_categories": len(self.categories), "box_format": "normalized xyxy"}
 
     @torch.inference_mode()
