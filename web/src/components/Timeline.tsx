@@ -2,6 +2,13 @@ import type { EventT } from '../api'
 
 export const TYPE_LABEL: Record<string, string> = { zone_entry: 'Zone entry', stationary_object: 'Stationary', passage_occupancy: 'Aisle occupancy' }
 export const fmt = (ms: number) => { const s = ms / 1000; return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}` }
+export function eventLabel(event: EventT) {
+  const name = event.class_name
+  const subject = name.charAt(0).toUpperCase() + name.slice(1)
+  if (event.type === 'zone_entry') return `${subject} in the marked area`
+  if (event.type === 'passage_occupancy') return `${subject} overlaps a passage`
+  return `${subject} appears stationary`
+}
 
 interface Props { durationMs: number; events: EventT[]; currentMs: number; selectedId: string | null; onSelect: (e: EventT) => void; onSeek: (ms: number) => void }
 
@@ -22,7 +29,7 @@ export default function Timeline({ durationMs, events, currentMs, selectedId, on
       <div className="tl-lanes" style={{ minHeight: Math.max(1, lanes.length) * 30 }}>
         {lanes.map((lane, i) => lane.map(e => (
           <button key={e.id} className={`tl-seg st-${e.review_status}${selectedId === e.id ? ' sel' : ''}`} style={{ left: pct(e.start_ms), width: `max(10px, calc(${pct(e.end_ms)} - ${pct(e.start_ms)}))`, top: i * 30 }}
-            aria-pressed={selectedId === e.id} aria-label={`${TYPE_LABEL[e.type]}, ${e.class_name}, ${fmt(e.start_ms)} to ${fmt(e.end_ms)}, ${e.review_status}`} onClick={() => onSelect(e)}>
+            aria-pressed={selectedId === e.id} aria-label={`${eventLabel(e)}, ${fmt(e.start_ms)} to ${fmt(e.end_ms)}`} onClick={() => onSelect(e)}>
             <span>{TYPE_LABEL[e.type]}</span>
           </button>)))}
       </div>

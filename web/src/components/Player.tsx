@@ -45,8 +45,12 @@ export default function Player(p: Props) {
       boxesAt(q.idx, v.currentTime * 1000, q.toleranceMs).forEach(o => {
         const [x1, y1] = toPixels(o.box[0], o.box[1], r), [x2, y2] = toPixels(o.box[2], o.box[3], r)
         const hi = q.highlightTracks.includes(o.track_id); g.lineWidth = hi ? 3.5 : 2; g.strokeStyle = PALETTE[o.track_id % PALETTE.length]; g.strokeRect(x1, y1, x2 - x1, y2 - y1)
-        const label = `${o.class_name} #${o.track_id}`; g.font = '600 11px system-ui'; const tw = g.measureText(label).width
-        g.fillStyle = PALETTE[o.track_id % PALETTE.length]; g.fillRect(x1, Math.max(0, y1 - 15), tw + 8, 15); g.fillStyle = '#fff'; g.fillText(label, x1 + 4, Math.max(11, y1 - 4))
+        if (hi || q.highlightTracks.length === 0) {
+          const label = o.class_name
+          g.font = '600 11px system-ui'
+          const tw = g.measureText(label).width
+          g.fillStyle = PALETTE[o.track_id % PALETTE.length]; g.fillRect(x1, Math.max(0, y1 - 15), tw + 8, 15); g.fillStyle = '#fff'; g.fillText(label, x1 + 4, Math.max(11, y1 - 4))
+        }
       })
     }
     if (q.draftPoints && q.draftPoints.length) {
@@ -89,11 +93,13 @@ export default function Player(p: Props) {
         {!p.src && <div className="stage-msg">{p.video.derivative_status === 'failed' ? `Playable version failed: ${p.video.derivative_error ?? ''}` : 'Preparing a browser-playable version...'}</div>}
         {err && <div className="stage-msg err">{err}</div>}
       </div>
-      <div className="player-bar">
-        <span className="muted">Speed</span>
-        {[0.5, 1, 2].map(r => <button key={r} className={`chip${rate === r ? ' on' : ''}`} aria-pressed={rate === r} onClick={() => setRate(r)}>{r}x</button>)}
-        <button className="chip" onClick={() => stage.current?.requestFullscreen?.()}>Fullscreen</button>
-      </div>
+      <details className="review-options"><summary>Playback options</summary>
+        <div className="player-bar">
+          <span className="muted">Speed</span>
+          {[0.5, 1, 2].map(r => <button key={r} className={`chip${rate === r ? ' on' : ''}`} aria-pressed={rate === r} onClick={() => setRate(r)}>{r}x</button>)}
+          <button className="chip" onClick={() => stage.current?.requestFullscreen?.()}>Fullscreen with overlays</button>
+        </div>
+      </details>
     </div>
   )
 }

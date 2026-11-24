@@ -38,6 +38,7 @@ try {
   check('live backend badge', (await text('.badge')).includes('Live backend'))
 
   // upload
+  if (!(await page.$eval('.recording-options', d => d.open))) await page.click('.recording-options > summary')
   const input = await page.$('input[type=file]'); await input.uploadFile(clip)
   if (await input.evaluate(e => !e.files?.[0]?.size)) throw new Error('browser could not read the selected clip')
   const NAME = `E2E pedestrian clip ${Date.now()}`
@@ -69,10 +70,12 @@ try {
   // process with the real detector
   await clickText('Process video')
   await waitFor(async () => (await page.$eval('.runinfo', e => e.textContent).catch(() => '')).includes('completed'), 240000, 'run completed')
+  check('review hides setup and search controls by default', await page.$$eval('details.setup-panel, details.event-filters', els => els.length >= 4 && els.every(d => !d.open)))
   const runText = (await page.$eval('.runinfo', e => e.textContent)).replace(/\s+/g, ' ')
   check('run completed with the real COCO detector', /Detector: fasterrcnn_mobilenet_v3_large_320_fpn COCO_V1/.test(runText), runText.slice(0, 230))
   const nEvents = await page.$$eval('ul.events li', l => l.length)
   check('events are listed', nEvents > 0, `${nEvents} events`)
+  check('event rows use plain labels without repeated unreviewed badges or track IDs', await page.$$eval('ul.events .ev', rows => rows.every(row => /Person in the marked area/.test(row.textContent) && !/Unreviewed|#\d/.test(row.textContent))))
 
   // inspect
   await page.click('ul.events li button'); await sleep(700)
@@ -94,11 +97,13 @@ try {
   check('evidence thumbnail jumps to the source timestamp', Math.abs(after - before) > 0.1, `${before.toFixed(2)} -> ${after.toFixed(2)}`)
 
   // review
+  check('a new review requires an explicit verdict', await page.$eval('.evidence-panel fieldset button', b => b.disabled))
   await clickText('Confirmed', 'label'); await page.type('textarea', 'Person clearly inside the strip.')
   await clickText('Save review'); await waitFor(async () => page.$$eval('.notice', n => n.some(x => x.textContent.includes('Saved.'))), 10000, 'review saved')
   check('review saved', true)
 
   // keyboard on the timeline
+  await clickText('Event timeline', 'summary')
   await page.focus('.tl-axis'); const t0 = await page.$eval('video[src]', v => v.currentTime); await page.keyboard.press('ArrowRight'); await sleep(500)
   check('timeline responds to the keyboard', Math.abs((await page.$eval('video[src]', v => v.currentTime)) - t0) > 0.5)
 
@@ -108,6 +113,7 @@ try {
   check('review survives a reload', statuses.includes('Confirmed'), statuses.join(','))
 
   // search
+  await page.click('.event-filters > summary')
   await page.type('#q', 'person entering restricted zone'); await page.keyboard.press('Enter'); await sleep(900)
   check('text search shows what was understood', (await page.$$eval('.event-panel .notice', n => n.some(x => x.textContent.includes('Understood')))))
   await page.$eval('#q', e => { e.value = '' }); await page.focus('#q')

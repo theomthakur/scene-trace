@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { ApiError, type Backend, type EventT, type ExplanationT, type SemanticInfo } from '../api'
-import { fmt, TYPE_LABEL } from './Timeline'
+import { eventLabel, fmt, TYPE_LABEL } from './Timeline'
 
 export const FLAG_TEXT: Record<string, string> = {
   present_at_video_start: 'Already present when the video began, so the true start is unknown.',
@@ -49,8 +49,9 @@ export function EventList({ events, hits, selectedId, onSelect, backend, runId, 
   useEffect(() => { setQ(''); setNote(null); setSem(null); setSemNote(null); onSearchResults(null) }, [runId])   // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <section aria-labelledby="events-h" className="panel event-panel">
-      <div className="section-heading"><div><p className="eyebrow">ANALYSIS</p><h2 id="events-h">Detected events <span className="count">{shown.length}</span></h2></div></div>
-      <p className="panel-description">Select an event to inspect its timeline and supporting frames.</p>
+      <div className="section-heading"><h2 id="events-h">Moments to review <span className="count">{shown.length}</span></h2></div>
+      <p className="panel-description">Pick a moment to jump to that part of the video.</p>
+      <details className="review-options event-filters"><summary>Search and filter</summary>
       <form className="search" onSubmit={run} role="search">
         <label className="sr" htmlFor="q">Search events</label>
         <input id="q" value={q} onChange={e => setQ(e.target.value)} placeholder={mode === 'semantic' ? 'Describe what you are looking for, for example "red car"' : 'Search events or time...'} />
@@ -73,16 +74,16 @@ export function EventList({ events, hits, selectedId, onSelect, backend, runId, 
         <label>Type <select value={type} onChange={e => setType(e.target.value)}><option value="">All</option>{Object.entries(TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
         <label>Review <select value={status} onChange={e => setStatus(e.target.value)}><option value="">All</option>{Object.entries(REVIEW_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
       </div>
+      </details>
       {shown.length === 0 && <p className="empty">{hits ? 'No events match this search.' : 'No events match. A run with no events is not proof the video is incident-free; check the quality flags.'}</p>}
       <ul className="events">
         {shown.map(e => (
           <li key={e.id}><button className={`ev${selectedId === e.id ? ' sel' : ''}`} aria-current={selectedId === e.id ? 'true' : undefined} onClick={() => onSelect(e)}>
-            <span className="ev-title">{TYPE_LABEL[e.type]}: {e.class_name} #{e.track_ids.join(', #')}</span>
             <span className="ev-time">{fmt(e.start_ms)} to {fmt(e.end_ms)}</span>
+            <span className="ev-title">{eventLabel(e)}</span>
             {sem?.get(e.id) && <span className="pill sem" title="Cosine similarity between the query and this event's best evidence image. A ranking aid, not a confidence.">#{sem.get(e.id)!.rank} similarity {sem.get(e.id)!.similarity.toFixed(2)}</span>}
             {sem?.get(e.id) && <span className="muted ev-sem">best match: {sem.get(e.id)!.best_item.kind === 'crop' ? 'crop of the tracked object' : 'full frame'}, {sem.get(e.id)!.best_item.role} frame at {fmt(sem.get(e.id)!.best_item.t_ms)}</span>}
-            <span className={`pill st-${e.review_status}`}>{REVIEW_LABEL[e.review_status]}</span>
-            {e.uncertainty_flags.length > 0 && <span className="pill flag">{e.uncertainty_flags.length} flag{e.uncertainty_flags.length > 1 ? 's' : ''}</span>}
+            {e.review_status !== 'unreviewed' && <span className={`pill st-${e.review_status}`}>{REVIEW_LABEL[e.review_status]}</span>}
             {e.source === 'fixture' && <span className="pill flag">fixture</span>}
           </button></li>))}
       </ul>
@@ -90,52 +91,51 @@ export function EventList({ events, hits, selectedId, onSelect, backend, runId, 
   )
 }
 
-export function EvidenceDrawer({ ev, backend, onSeek, onChanged, readOnly }: { ev: EventT | null; backend: Backend; onSeek: (ms: number) => void; onChanged: (e: EventT) => void; readOnly: boolean }) {
-  const [verdict, setVerdict] = useState<'confirmed' | 'dismissed' | 'uncertain'>('confirmed'); const [note, setNote] = useState('')
+export function EvidenceDrawer({ ev, backend, onSeek, onChanged, readOnly }: { ev: EventT; backend: Backend; onSeek: (ms: number) => void; onChanged: (e: EventT) => void; readOnly: boolean }) {
+  const [verdict, setVerdict] = useState<EventT['review_status']>('unreviewed'); const [note, setNote] = useState('')
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null); const [orig, setOrig] = useState(false); const [saving, setSaving] = useState(false)
   // Sync the form with the event. The status message is cleared only when a different event is selected, so "Saved." survives the version bump caused by saving.
-  useEffect(() => { setNote(ev?.review_note ?? ''); setVerdict(ev && ev.review_status !== 'unreviewed' ? ev.review_status : 'confirmed') }, [ev?.id, ev?.review_version])   // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setMsg(null) }, [ev?.id])
-  if (!ev) return <section className="panel" aria-labelledby="ev-h"><h2 id="ev-h">Evidence</h2><p className="empty">Select an event to see its evidence.</p></section>
+  useEffect(() => { setNote(ev.review_note); setVerdict(ev.review_status) }, [ev.id, ev.review_version])   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setMsg(null) }, [ev.id])
   const save = async () => {
+    if (verdict === 'unreviewed') return
     setSaving(true); setMsg(null)
     try { const u = await backend.review(ev.id, verdict, note, ev.review_version); onChanged(u); setMsg({ kind: 'ok', text: 'Saved.' }) }
     catch (e) { setMsg({ kind: 'err', text: e instanceof ApiError && e.status === 409 ? 'This event changed elsewhere. Reload the events and review again.' : (e as Error).message }) }
     finally { setSaving(false) }
   }
   return (
-    <section className="panel" aria-labelledby="ev-h">
-      <h2 id="ev-h">Evidence</h2>
-      <p className="ev-desc">{ev.description}</p>
-      <dl className="kv">
-        <dt>Interval</dt><dd>{fmt(ev.start_ms)} to {fmt(ev.end_ms)} ({ev.start_ms} to {ev.end_ms} ms)</dd>
-        <dt>Rule</dt><dd>{String(ev.details.rule)} <span className="muted">({ev.rule_version})</span></dd>
-        {Object.entries(ev.details).filter(([k]) => !['rule', 'zone_name', 'assumption', 'person_association'].includes(k)).map(([k, v]) => <Fragment key={k}><dt>{k.replaceAll('_', ' ')}</dt><dd>{String(v)}</dd></Fragment>)}
-        {ev.details.assumption != null && <><dt>Assumption</dt><dd>{String(ev.details.assumption)}</dd></>}
-        {ev.details.person_association != null && <><dt>Person association</dt><dd>{String(ev.details.person_association)}</dd></>}
-        <dt>Source</dt><dd>{ev.source === 'detector' ? 'Real detector output on decoded video pixels' : 'FIXTURE: scripted detections, not real inference'}</dd>
-      </dl>
-      {ev.uncertainty_flags.length > 0 && <ul className="flags">{ev.uncertainty_flags.map(f => <li key={f}><strong>{f.replaceAll('_', ' ')}.</strong> {FLAG_TEXT[f] ?? ''}</li>)}</ul>}
-      <h3>Evidence frames</h3>
-      <label className="check"><input type="checkbox" checked={orig} onChange={e => setOrig(e.target.checked)} /> Show unannotated originals</label>
+    <section className="panel evidence-panel" aria-labelledby="ev-h">
+      <h2 id="ev-h">{eventLabel(ev)}</h2>
+      <p className="muted">{fmt(ev.start_ms)} to {fmt(ev.end_ms)}{ev.details.zone_name ? ` · ${ev.details.zone_name}` : ''}</p>
+      {ev.uncertainty_flags.length > 0 && <ul className="flags">{ev.uncertainty_flags.map(f => <li key={f}>{FLAG_TEXT[f] ?? f.replaceAll('_', ' ')}</li>)}</ul>}
+      <h3>Frames from the video</h3>
       <div className="frames">
         {ev.evidence.frames.map(f => f.missing ? <div key={f.role} className="frame missing">{f.role}: frame unavailable</div> :
           <button key={f.role} className="frame" onClick={() => onSeek(f.t_ms)} aria-label={`${f.role} frame at ${fmt(f.t_ms)}. Jump to this time.`}>
             <img src={backend.evidenceUrl(ev, `${f.role}${orig ? '_original' : ''}.jpg`)} alt={`${f.role} of event, ${orig ? 'original' : 'with boxes'}`} loading="lazy" /><span>{f.role} {fmt(f.t_ms)}</span></button>)}
       </div>
-      {ev.evidence.clip && <><h3>Context clip <span className="muted">{fmt(ev.evidence.clip_range_ms[0])} to {fmt(ev.evidence.clip_range_ms[1])}</span></h3><video className="clip" controls preload="none" src={backend.evidenceUrl(ev, 'clip.mp4')} /></>}
-      {ev.evidence.clip_error && <p className="notice warn">Clip unavailable: {ev.evidence.clip_error}</p>}
-      <ExplainPanel ev={ev} backend={backend} onSeek={onSeek} readOnly={readOnly} />
-      <h3>Review</h3>
+      {!readOnly && <><h3>What do you see?</h3>
       <fieldset disabled={readOnly || saving}>
         <legend className="sr">Verdict</legend>
         {(['confirmed', 'dismissed', 'uncertain'] as const).map(v => <label key={v} className="radio"><input type="radio" name="verdict" checked={verdict === v} onChange={() => setVerdict(v)} /> {REVIEW_LABEL[v]}</label>)}
-        <label className="block">Note<textarea value={note} onChange={e => setNote(e.target.value)} rows={3} maxLength={2000} /></label>
-        <button className="btn primary" onClick={save}>Save review</button>
-      </fieldset>
-      {readOnly && <p className="muted">Static demo: reviews are not saved.</p>}
+        <label className="block">Note (optional)<textarea value={note} onChange={e => setNote(e.target.value)} rows={2} maxLength={2000} /></label>
+        <button className="btn primary" onClick={save} disabled={verdict === 'unreviewed'}>Save review</button>
+      </fieldset></>}
       {msg && <p className={`notice ${msg.kind === 'ok' ? 'info' : 'err'}`} role="status">{msg.text}</p>}
-      <p className="muted">Current: {REVIEW_LABEL[ev.review_status]} (revision {ev.review_version}){ev.reviewed_at ? `, ${ev.reviewed_at}` : ''}</p>
+      <details className="review-options evidence-options"><summary>More evidence options</summary>
+        <label className="check"><input type="checkbox" checked={orig} onChange={e => setOrig(e.target.checked)} /> Show frames without boxes</label>
+        {ev.evidence.clip && <><h3>Context clip <span className="muted">{fmt(ev.evidence.clip_range_ms[0])} to {fmt(ev.evidence.clip_range_ms[1])}</span></h3><video className="clip" controls preload="none" src={backend.evidenceUrl(ev, 'clip.mp4')} /></>}
+        {ev.evidence.clip_error && <p className="notice warn">Clip unavailable: {ev.evidence.clip_error}</p>}
+        <ExplainPanel ev={ev} backend={backend} onSeek={onSeek} readOnly={readOnly} />
+        <dl className="kv">
+          <dt>Rule</dt><dd>{String(ev.details.rule)} <span className="muted">({ev.rule_version})</span></dd>
+          <dt>Track IDs</dt><dd>{ev.track_ids.join(', ')}</dd>
+          {Object.entries(ev.details).filter(([k]) => !['rule', 'zone_name'].includes(k)).map(([k, v]) => <Fragment key={k}><dt>{k.replaceAll('_', ' ')}</dt><dd>{String(v)}</dd></Fragment>)}
+          <dt>Source</dt><dd>{ev.source === 'detector' ? 'Detector output on decoded video pixels' : 'Fixture with scripted detections'}</dd>
+          <dt>Review</dt><dd>{REVIEW_LABEL[ev.review_status]} (revision {ev.review_version}){ev.reviewed_at ? `, ${ev.reviewed_at}` : ''}</dd>
+        </dl>
+      </details>
     </section>
   )
 }

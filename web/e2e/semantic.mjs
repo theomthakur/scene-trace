@@ -21,6 +21,7 @@ const switchMode = () => p.evaluate(() => document.querySelector('input[name=sea
 try {
   await p.goto(BASE, { waitUntil: 'networkidle0' })
   await waitFor(async () => (await p.$$('ul.events li')).length > 0, 30000)
+  await p.click('.event-filters > summary')
   await switchMode()
   check('mode switch shows semantic mode', await p.$eval('#q', e => e.placeholder.includes('Describe')))
   await setQuery('person carrying a shopping bag')

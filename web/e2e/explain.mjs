@@ -19,6 +19,7 @@ try {
   await p.click('ul.events li button')
   await sleep(500)
   check('panel is collapsed by default and labelled experimental', (await p.$eval('details.explain', d => !d.open)) && (await p.$eval('details.explain summary', e => e.textContent)).includes('Experimental') && (await p.$eval('details.explain summary', e => e.textContent)).includes('unreliable'))
+  await p.click('.evidence-options > summary')
   await p.click('details.explain summary')
   await sleep(300)
   check('opened panel states how often descriptions were wrong', (await p.$eval('details.explain', d => d.textContent)).includes('3 of 21'))
@@ -36,11 +37,10 @@ try {
   await p.evaluate(() => document.querySelector('.explain input[type=checkbox]:not(:checked)').click())
   check('choosing several frames shows the reliability warning', (await p.$$eval('.explain .notice.warn', n => n.some(x => x.textContent.includes('markedly less reliable')))))
   // the event, review and report are untouched by explanations
-  const statusBefore = await p.$eval('.ev.sel .pill', e => e.textContent)
+  await clickText('Confirmed', 'label')
   await clickText('Save review')
   await waitFor(async () => p.$$eval('.notice', n => n.some(x => x.textContent.includes('Saved.'))), 10000)
   check('review still works alongside explanations', true)
-  void statusBefore
   // model unavailable: the server answers 503
   await p.setRequestInterception(true)
   p.on('request', r => (r.url().includes('/explain')
