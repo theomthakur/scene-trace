@@ -44,7 +44,7 @@ These exist, are tested for plumbing, and are **not validated**. They are option
 
 ## Run locally
 
-Tested on an Apple M4 Mac with CPU inference. You need Python 3.11, Node.js 20 or later, `uv`, and FFmpeg with H.264 support. The first model and media downloads need an internet connection.
+Tested on an Apple M4 Mac with CPU inference. You need Python 3.11, Node.js 22.12 or later, `uv`, and FFmpeg with H.264 support. The first model and media downloads need an internet connection.
 
 ```bash
 uv venv --python 3.11 .venv
@@ -57,13 +57,13 @@ cd web && npm ci && cd ..
 scripts/dev.sh
 ```
 
-Open **http://127.0.0.1:5173**. Upload `var/candidates/pedestrian_area.webm`, draw and save a zone, select **Process video**, then select an event to inspect its evidence. Logs are in `var/dev/`. Stop everything with `scripts/dev.sh stop`.
+Open **http://127.0.0.1:5173**. Follow the [first-run walkthrough](docs/WALKTHROUGH.md) to upload the sample, draw a zone, review evidence and export a report. Logs are in `var/dev/`. Stop everything with `scripts/dev.sh stop`.
 
 Sample media and run data are not in the repository; see [third-party notices](THIRD-PARTY-NOTICES.md) for sources and licences.
 
 ## Read-only demo and deployment
 
-`python -m video_investigator.cli export-demo` exports a finished run for a read-only demo (`http://127.0.0.1:5173/?mode=demo`); it runs no model. `scripts/build_demo.sh` builds a static site in `web/dist` and `python scripts/serve_static.py web/dist` previews it with production headers. A Docker image and compose file run the live backend. Both were built and checked locally; **nothing is deployed**. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for configuration, storage, resources and costs.
+`python -m video_investigator.cli export-demo` exports a finished run for a read-only demo (`http://127.0.0.1:5173/?mode=demo`). `scripts/build_demo.sh --run-id <id>` builds a static site in `web/dist-demo`, and `python scripts/serve_static.py web/dist-demo` previews it with production headers. The live app uses Docker Compose with an API and one worker on a shared local volume. See [deployment readiness](docs/DEPLOYMENT.md) for the local checks and remaining hosting work.
 
 ## How it works
 
@@ -80,7 +80,7 @@ SceneTrace does not identify people, determine intent or blame, or make safety-c
 ## Tests
 
 ```bash
-python -m pytest                       # 116 offline tests (fixtures and test doubles, no downloads)
+python -m pytest                       # 119 offline tests (fixtures and test doubles, no downloads)
 python -m pytest -m real_inference     # 6 tests with the real models and clips
 (cd web && npm test && npm run build)  # 14 unit tests, type-check, build
 ```

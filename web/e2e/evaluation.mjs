@@ -16,6 +16,8 @@ try {
   await sleep(1500)
   const h3 = await p.$$eval('h3', h => h.map(x => x.textContent.trim()))
   check('original lanes still render', h3.includes('Algorithm fixtures') && h3.includes('Development footage') && h3.includes('Frozen test footage'), h3.slice(0, 4).join(' | '))
+  check('reliability card shows the audited counts and limits', h3.includes('Reliability benchmark') && await p.$eval('body', e => e.textContent.includes('24 predictions reviewed') && e.textContent.includes('Ambiguous: 5') && e.textContent.includes('Recall was not measured')))
+  check('media sweep shows the saved processing results', h3.includes('Media robustness sweep') && await p.$eval('body', e => e.textContent.includes('19 of 19 clips passed')))
   check('semantic search results are shown with a comparison baseline', h3.includes('Semantic search') && (await p.$$eval('table', t => t.some(x => x.textContent.includes('Class filter only, in time order') && x.textContent.includes('Recall@1')))))
   check('description evaluation shows verdict counts', h3.includes('Video-language descriptions') && (await p.$eval('body', e => e.textContent.includes('MOSTLY SUPPORTED') && e.textContent.includes('INVENTED A DETAIL'))))
   check('cross-camera evaluation says true accuracy is not measured', h3.includes('Appearance-based association') && (await p.$eval('body', e => e.textContent.includes('true cross-camera accuracy is not measured'))))

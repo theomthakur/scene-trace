@@ -51,3 +51,15 @@ def test_cors_allowlist_is_explicit(monkeypatch, tmp_path):
     with make(monkeypatch, tmp_path) as c:
         ok = c.get("/api/health", headers={"Origin": "http://127.0.0.1:5173"}); assert ok.headers.get("access-control-allow-origin") == "http://127.0.0.1:5173"
         evil = c.get("/api/health", headers={"Origin": "https://evil.example"}); assert "access-control-allow-origin" not in evil.headers
+
+
+def test_clean_install_exposes_saved_evaluations_and_prefers_local_reports(monkeypatch, tmp_path):
+    with make(monkeypatch, tmp_path) as c:
+        ids = c.get("/api/evaluations").json()["evaluations"]
+        assert {"development", "frozen-test", "benchmark-reliability", "robustness-sweep"} <= set(ids)
+        assert c.get("/api/evaluations/frozen-test").json()["lanes"]["test"]["status"] != "not_evaluated"
+        assert c.get("/api/evaluations/test3-results").status_code == 404
+
+        path = tmp_path / "data" / "evaluations" / "development.json"
+        path.write_text('{"headline": "Local report"}', encoding="utf-8")
+        assert c.get("/api/evaluations/development").json() == {"headline": "Local report"}

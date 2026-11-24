@@ -5,7 +5,7 @@ import fs from 'node:fs'
 
 const BROWSER = process.env.BROWSER_PATH || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
 const BASE = process.env.UI_URL || 'http://127.0.0.1:5173'
-const clip = process.argv[2]
+const clip = fs.realpathSync(process.argv[2])
 const results = []
 const check = (name, ok, detail = '') => { results.push({ name, ok: !!ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? '  ' + detail : ''}`) }
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -24,11 +24,22 @@ const hasInfo = async s => page.$$eval('.notice.info', (ns, needle) => ns.some(n
 const painted = async () => page.evaluate(() => { const c = document.querySelector('canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n })
 
 try {
+  const token = process.env.E2E_API_TOKEN
+  const premature = []
+  if (token) page.on('response', r => { if (r.status() === 401 && r.url().includes('/api/')) premature.push(r.url()) })
   await page.goto(BASE, { waitUntil: 'networkidle0' })
+  if (token) {
+    await page.waitForSelector('form.login input[type=password]')
+    check('protected views wait for authentication', !await page.$('input[type=file]') && premature.length === 0)
+    await page.type('form.login input[type=password]', token)
+    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), clickText('Continue')])
+  }
+  await page.waitForSelector('input[type=file]')
   check('live backend badge', (await text('.badge')).includes('Live backend'))
 
   // upload
   const input = await page.$('input[type=file]'); await input.uploadFile(clip)
+  if (await input.evaluate(e => !e.files?.[0]?.size)) throw new Error('browser could not read the selected clip')
   const NAME = `E2E pedestrian clip ${Date.now()}`
   await page.type('input[name=name]', NAME)
   await clickText('Upload')
@@ -124,5 +135,5 @@ try {
 check('no console errors', consoleErrors.length === 0, consoleErrors.slice(0, 3).join(' | '))
 try { await page.screenshot({ path: process.env.SHOT || 'e2e/last.png', fullPage: true }) } catch { /* ignore */ }
 await browser.close()
-fs.writeFileSync('e2e/last-results.json', JSON.stringify(results, null, 2))
+fs.writeFileSync(process.env.E2E_RESULTS || 'e2e/last-results.json', JSON.stringify(results, null, 2))
 process.exit(results.every(r => r.ok) ? 0 : 1)

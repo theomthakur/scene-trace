@@ -10,13 +10,13 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
-from ..config import REPO, Settings, load_settings
+from ..config import Settings, load_settings
 from ..db import models as m
 from ..db.session import make_engine, migrate, session_factory, session_scope
 from ..events.geometry import validate_polygon
 from ..media.probe import MediaError, probe, sha256_file, validate_limits
-from ..paths import data_dir, evaluations_dir, runs_dir, uploads_tmp, videos_dir
-from ..reports import export
+from ..paths import data_dir, runs_dir, uploads_tmp, videos_dir
+from ..reports import evaluations, export
 from ..search import engine as search_engine
 from ..search import semantic
 from ..explain import vlm
@@ -625,28 +625,16 @@ def create_app() -> FastAPI:
         return rep
 
     # ---------- evaluations ----------
-    # Committed evidence reports that the Evaluation view may show. An explicit allow-list: nothing else under docs/evidence is served.
-    EVIDENCE_EVALS = ("semantic-eval", "explanation-eval", "crosscam-eval", "finetune-development", "finetune-test", "benchmark-expansion")
-
-    def evidence_path(eval_id: str):
-        p = REPO / "docs" / "evidence" / f"{eval_id}.json"
-        return p if eval_id in EVIDENCE_EVALS and p.is_file() else None
-
     @app.get("/api/evaluations")
     def list_evals():
-        ids = {p.stem for p in evaluations_dir().glob("*.json")} | {i for i in EVIDENCE_EVALS if evidence_path(i)}
-        return {"evaluations": sorted(ids)}
+        return {"evaluations": sorted(evaluations.report_paths())}
 
     @app.get("/api/evaluations/{eval_id}")
     def get_eval(eval_id: str):
-        if not re.fullmatch(r"[A-Za-z0-9_.-]{1,80}", eval_id):
+        path = evaluations.report_paths().get(eval_id)
+        if path is None:
             raise ApiError(404, "evaluation_not_found", "No such evaluation.")
-        p = evaluations_dir() / f"{eval_id}.json"
-        if not p.is_file():
-            p = evidence_path(eval_id)
-        if p is None or not p.is_file():
-            raise ApiError(404, "evaluation_not_found", "No such evaluation.")
-        return json.loads(p.read_text())
+        return evaluations.read_report(path)
 
     web_dist = os.environ.get("VI_WEB_DIST")
     if web_dist and Path(web_dist).is_dir():                       # single-origin hosting: the API also serves the built UI

@@ -3,6 +3,7 @@
 var
 web/node_modules
 web/dist
+web/dist-demo
 web/public/demo
 **/__pycache__
 *.pyc

@@ -5,6 +5,7 @@ __pycache__/
 .pytest_cache/
 node_modules/
 web/dist/
+web/dist-demo/
 *.egg-info/
 .DS_Store
 web/public/demo/

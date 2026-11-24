@@ -90,7 +90,8 @@ def cmd_evaluate_expansion(args) -> int:
     from .evaluation import benchmark as b
     rep = b.run_expansion(include_test2=args.include_test2)
     b.EVIDENCE.mkdir(parents=True, exist_ok=True)
-    (b.EVIDENCE / "benchmark-expansion.json").write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
+    name = "benchmark-expansion-development" if not args.include_test2 and b.TEST2_RESULT.exists() else "benchmark-expansion"
+    (b.EVIDENCE / f"{name}.json").write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
     if args.include_test2:
         b.TEST2_RESULT.write_text(json.dumps({"lane": rep["lanes"]["test_2"], "config_hash": rep["config_hash"], "generated_at": rep["generated_at"]}, indent=2, sort_keys=True, default=float) + "\n")
     print(json.dumps({"sample_counts": rep["sample_counts"], "lanes": {k: (v.get("metrics") or v.get("status")) for k, v in rep["lanes"].items()}}, indent=2, default=str)[:3000])
@@ -101,7 +102,8 @@ def cmd_evaluate_reliability(args) -> int:
     from .evaluation import benchmark as b
     rep = b.run_reliability(include_test3=args.include_test3)
     b.EVIDENCE.mkdir(parents=True, exist_ok=True)
-    (b.EVIDENCE / "benchmark-reliability.json").write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
+    name = "benchmark-reliability-development" if not args.include_test3 and b.TEST3_RESULT.exists() else "benchmark-reliability"
+    (b.EVIDENCE / f"{name}.json").write_text(json.dumps(rep, indent=2, sort_keys=True, default=float) + "\n")
     if args.include_test3:
         b.TEST3_RESULT.write_text(json.dumps({"lane": rep["lanes"]["test_3"], "config_hash": rep["config_hash"], "generated_at": rep["generated_at"]}, indent=2, sort_keys=True, default=float) + "\n")
     print(json.dumps({"sample_counts": rep["sample_counts"], "lanes": {k: {kk: vv for kk, vv in v.items() if kk in ("metrics", "audit", "status")} for k, v in rep["lanes"].items()}}, indent=2, default=str)[:4000])
@@ -119,10 +121,10 @@ def cmd_export_demo(args) -> int:
     import shutil
     from datetime import datetime, timezone
     from sqlalchemy import select
-    from .api import app as api_app
     from .db import models as m
     from .db.session import make_engine, session_factory, session_scope
-    from .paths import data_dir, evaluations_dir
+    from .paths import data_dir
+    from .reports.evaluations import read_report, report_paths
     eng = make_engine(); F = session_factory(eng); out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     with session_scope(F) as s:
         run = s.get(m.Run, args.run_id) if args.run_id else s.scalars(select(m.Run).where(m.Run.state == "completed").order_by(m.Run.created_at.desc())).first()
@@ -148,11 +150,7 @@ def cmd_export_demo(args) -> int:
             src = attempt / "evidence" / e.event_key
             if src.is_dir():
                 shutil.copytree(src, ev_dir / e.event_key, dirs_exist_ok=True, ignore=shutil.ignore_patterns("clip.mp4") if args.skip_clips else None)
-        evals = {p.stem: json.loads(p.read_text()) for p in evaluations_dir().glob("*.json")}
-        for name in ("semantic-eval", "explanation-eval", "crosscam-eval", "finetune-development", "finetune-test", "benchmark-expansion"):
-            ep = Path(__file__).resolve().parents[2] / "docs" / "evidence" / f"{name}.json"
-            if ep.is_file():
-                evals[name] = json.loads(ep.read_text())
+        evals = {report_id: read_report(path) for report_id, path in report_paths().items()}
         index = {"name": v.display_name, "video": video, "run": run_d, "zones": run.zones, "events": ev_out, "observations": obs, "evaluations": evals,
                  "generated_at": datetime.now(timezone.utc).isoformat(), "note": "Precomputed static demo. No model runs in this mode."}
     (out / "index.json").write_text(json.dumps(index))

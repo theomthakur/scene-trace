@@ -20,6 +20,7 @@ check('video plays from the static bundle', await p.$eval('video[src]', v => v.s
 check('no data requests to the backend API', apiCalls.length === 0, apiCalls.slice(0, 2).join(','))
 await p.goto(DEFAULT_DEMO ? `${BASE}/#/evaluation` : `${BASE}/?mode=demo#/evaluation`, { waitUntil: 'networkidle0' }); await sleep(800)
 check('evaluation view renders from the bundle', (await p.$$eval('h2,h3', h => h.some(x => x.textContent.includes('Frozen test')))) && (await p.$$eval('table', t => t.length)) >= 1)
+check('the bundle includes the reliability and media sweep reports', await p.$$eval('h3', h => ['Reliability benchmark', 'Media robustness sweep'].every(title => h.some(x => x.textContent === title))))
 check('no console errors', errs.length === 0, errs.slice(0, 2).join(' | '))
 // backend-offline state: every /api request fails (skipped for a demo-default build, which never calls the API)
 if (!DEFAULT_DEMO) {

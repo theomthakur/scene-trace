@@ -152,3 +152,28 @@ def test_saved_audit_report_and_labels_agree_and_cover_every_event():
     assert all(v["label"] in ("supported", "unsupported", "ambiguous") and v["note"] for v in labels.values())
     a = rep["lanes"]["test_3"]["audit"]
     assert a["supported"] + a["unsupported"] + a["ambiguous"] == a["predicted_events"] == len(events) and a["unlabelled"] == 0
+
+
+@pytest.mark.parametrize(
+    ("command", "runner", "flag", "result_path", "report_name"),
+    [
+        ("cmd_evaluate_expansion", "run_expansion", "include_test2", "TEST2_RESULT", "benchmark-expansion"),
+        ("cmd_evaluate_reliability", "run_reliability", "include_test3", "TEST3_RESULT", "benchmark-reliability"),
+    ],
+)
+def test_dev_only_cli_run_preserves_frozen_reports(monkeypatch, tmp_path, command, runner, flag, result_path, report_name):
+    from argparse import Namespace
+    from video_investigator import cli
+    from video_investigator.evaluation import benchmark
+
+    canonical = tmp_path / f"{report_name}.json"
+    canonical.write_text('{"frozen": true}')
+    frozen = tmp_path / "frozen.json"
+    frozen.write_text('{"frozen": true}')
+    monkeypatch.setattr(benchmark, "EVIDENCE", tmp_path)
+    monkeypatch.setattr(benchmark, result_path, frozen)
+    monkeypatch.setattr(benchmark, runner, lambda **_: {"sample_counts": {}, "lanes": {}})
+
+    assert getattr(cli, command)(Namespace(**{flag: False})) == 0
+    assert canonical.read_text() == frozen.read_text() == '{"frozen": true}'
+    assert (tmp_path / f"{report_name}-development.json").is_file()

@@ -1,5 +1,5 @@
 """Serve a built folder locally with the headers from its vercel.json (including the Content-Security-Policy) and HTTP Range support,
-so a static build can be checked in a browser before it is deployed anywhere.   python scripts/serve_static.py web/dist [--port 4173]"""
+so a static build can be checked in a browser before it is deployed anywhere.   python scripts/serve_static.py web/dist-demo [--port 4173]"""
 import argparse, json, re, sys
 from pathlib import Path
 import uvicorn

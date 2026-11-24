@@ -1,5 +1,15 @@
 # Walkthrough
 
+## First run
+
+1. Install the [local prerequisites and dependencies](../README.md#run-locally), download the sample footage, and start the app with `scripts/dev.sh`. Open `http://127.0.0.1:5173`.
+2. In **Review**, choose `var/candidates/pedestrian_area.webm` and click **Upload**. The API saves the original and makes a browser-playable copy.
+3. Select **Draw zone** with **Restricted** selected. On the sample, draw a rectangle roughly from 35% to 65% of the video's width and from 60% to 95% of its height, measured from the top left. Select **Finish polygon**, then **Save zones**.
+4. Select **Process video**. The worker samples frames, detects and tracks objects, and applies the rules using the saved zone. Wait for **Completed**.
+5. Select an event from the list. Click an evidence thumbnail to jump to its timestamp. Add a review verdict and note, then save it. Export HTML for a readable report or JSON for structured data. Markdown is also available.
+6. Open **Evaluation** for the benchmark results, sample sizes and limitations. Open **System Design** to see how the API, worker, storage and UI fit together.
+7. Stop the local app with `scripts/dev.sh stop`. For the separate read-only demo build, see the [deployment guide](DEPLOYMENT.md#1-read-only-demo-static).
+
 ## 90-second demo script
 1. **(10 s) Start.** `scripts/dev.sh`, open http://127.0.0.1:5173. Point at the green "Live backend" badge: this is the live app, not canned results. (`?mode=demo` shows a separate amber "Static demo" badge.)
 2. **(15 s) Upload.** Choose `pedestrian_area.webm`. Say: "A browser-playable copy is made, and the original is stored untouched with its SHA-256."

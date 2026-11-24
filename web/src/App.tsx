@@ -17,10 +17,15 @@ export default function App() {
   const [health, setHealth] = useState<'checking' | 'up' | 'down'>(demo ? 'up' : 'checking')
   const [auth, setAuth] = useState<{ required: boolean; authenticated: boolean } | null>(null)
   const [token, setToken] = useState(''); const [authErr, setAuthErr] = useState('')
+  const canRead = demo || auth?.authenticated
   useEffect(() => { const f = () => setView(viewFromHash()); window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f) }, [])
   useEffect(() => { document.title = `${VIEWS.find(([id]) => id === view)![1]} | SceneTrace` }, [view])
   useEffect(() => { if (!demo) fetch(`${API_BASE}/api/health`).then(r => setHealth(r.ok ? 'up' : 'down')).catch(() => setHealth('down')) }, [demo])
-  useEffect(() => { if (!demo) fetch(`${API_BASE}/api/session`, { credentials: 'include' }).then(r => r.json()).then(setAuth).catch(() => setAuth({ required: false, authenticated: true })) }, [demo])
+  useEffect(() => {
+    if (!demo) fetch(`${API_BASE}/api/session`, { credentials: 'include' })
+      .then(r => { if (!r.ok) throw new Error('Session unavailable'); return r.json() })
+      .then(setAuth).catch(() => setAuthErr('Could not check the server session. Reload to try again.'))
+  }, [demo])
   const login = async (e: React.FormEvent) => {
     e.preventDefault(); setAuthErr('')
     const r = await fetch(`${API_BASE}/api/session`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) })
@@ -52,8 +57,9 @@ export default function App() {
             {authErr && <p className="notice err" role="alert">{authErr}</p>}
           </form>)}
         {health === 'down' && !demo && <div className="notice err" role="alert">The backend is not reachable. Start it with <code>scripts/dev.sh</code>, or open <a href="?mode=demo">the static demo</a>.</div>}
-        {!(auth?.required && !auth.authenticated) && view === 'review' && <Review backend={backend} />}
-        {!(auth?.required && !auth.authenticated) && view === 'evaluation' && <Evaluation backend={backend} />}
+        {!auth && !demo && health !== 'down' && authErr && <p className="notice err" role="alert">{authErr}</p>}
+        {canRead && view === 'review' && <Review backend={backend} />}
+        {canRead && view === 'evaluation' && <Evaluation backend={backend} />}
         {view === 'system-design' && <SystemDesign />}
       </main>
     </>

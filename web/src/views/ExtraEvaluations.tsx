@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Backend } from '../api'
 
-export const EXTRA_IDS = ['semantic-eval', 'explanation-eval', 'crosscam-eval', 'finetune-development', 'finetune-test', 'benchmark-expansion'] as const
+export const EXTRA_IDS = ['semantic-eval', 'explanation-eval', 'crosscam-eval', 'finetune-development', 'finetune-test', 'benchmark-expansion', 'benchmark-reliability', 'robustness-sweep'] as const
 const f2 = (v: unknown) => (typeof v === 'number' ? v.toFixed(2) : v == null ? 'n/a' : String(v))
 const pc = (v: unknown) => (typeof v === 'number' ? `${Math.round(v * 100)}%` : 'n/a')
 
@@ -91,6 +91,46 @@ function Expansion({ d }: { d: any }) {
   )
 }
 
+type ReliabilityCounts = { recordings: number; video_seconds: number; negative_units: number; audit_units: number }
+type ReliabilityLane = {
+  reason?: string
+  metrics?: { false_alerts_per_negative_video_hour: { false_alerts: number; negative_hours: number } }
+  audit?: { predicted_events: number; supported: number; unsupported: number; ambiguous: number; unlabelled: number }
+}
+
+function Reliability({ d }: { d: { headline: string; limits: string[]; sample_counts: Record<string, ReliabilityCounts>; lanes: Record<string, ReliabilityLane> } }) {
+  return <Card label="REAL VIDEO · RELIABILITY" title="Reliability benchmark" intro={d.headline} limits={d.limits}>
+    {([['development-3', 'development_3', 'Development'], ['test-3', 'test_3', 'Frozen test']] as const).map(([split, key, title]) => {
+      const counts = d.sample_counts[split], lane = d.lanes[key]
+      const alerts = lane.metrics?.false_alerts_per_negative_video_hour, audit = lane.audit
+      return <div key={split}>
+        <h4>{title}</h4>
+        <p>{counts.recordings} {counts.recordings === 1 ? 'recording' : 'recordings'}, {counts.video_seconds} s. Negative zones: {counts.negative_units}. Audit units: {counts.audit_units}.</p>
+        {alerts ? <p>{alerts.false_alerts} false alerts over {(alerts.negative_hours * 3600).toFixed(1)} s of negative-zone footage.</p> : <p>Not evaluated. {lane.reason}</p>}
+        {audit && <p>{audit.predicted_events} predictions reviewed. Supported: {audit.supported}. Unsupported: {audit.unsupported}. Ambiguous: {audit.ambiguous}. Unlabelled: {audit.unlabelled}. Recall was not measured.</p>}
+      </div>
+    })}
+  </Card>
+}
+
+type RobustnessClip = { file: string; codec: string; size: string; fps: number; ok: boolean; quality_flags: string[]; verify_problems: string[] }
+
+function Robustness({ d }: { d: { clips: RobustnessClip[] } }) {
+  const passed = d.clips.filter(clip => clip.ok && clip.verify_problems.length === 0).length
+  return <Card label="VIDEO PROCESSING" title="Media robustness sweep" intro={`${passed} of ${d.clips.length} clips passed the processing and verification checks.`}
+    limits={['The sweep checks decoding and pipeline execution across media formats. Event accuracy is measured separately.']}>
+    <details className="eval-details"><summary>Results by clip <span>+</span></summary><div>
+      <div className="table-scroll" role="region" tabIndex={0} aria-label="Media robustness results"><table>
+        <thead><tr><th scope="col">Clip</th><th scope="col">Format</th><th scope="col">Result</th><th scope="col">Flags</th></tr></thead>
+        <tbody>{d.clips.map(clip => <tr key={clip.file}><th scope="row">{clip.file}</th>
+          <td>{clip.codec} · {clip.size} · {clip.fps} fps</td>
+          <td>{clip.ok && clip.verify_problems.length === 0 ? 'Passed' : 'Failed'}</td>
+          <td>{[...clip.quality_flags, ...clip.verify_problems].join(', ') || 'None'}</td></tr>)}</tbody>
+      </table></div>
+    </div></details>
+  </Card>
+}
+
 export default function ExtraEvaluations({ backend, ids }: { backend: Backend; ids: string[] }) {
   const present = EXTRA_IDS.filter(i => ids.includes(i))
   const [data, setData] = useState<Record<string, any>>({}); const [err, setErr] = useState('')
@@ -98,8 +138,10 @@ export default function ExtraEvaluations({ backend, ids }: { backend: Backend; i
   if (present.length === 0) return null
   return (
     <>
-      <div className="section-title"><div><p className="eyebrow">02 / ADDITIONAL CAPABILITIES</p><h2>Search, descriptions, association and fine-tuning</h2></div><p>Each is measured on its own, with its own caveats.</p></div>
+      <div className="section-title"><div><p className="eyebrow">02 / ADDITIONAL RESULTS</p><h2>Reliability and model experiments</h2></div><p>Each is measured on its own, with its own caveats.</p></div>
       {err && <p className="notice err">{err}</p>}
+      {data['benchmark-reliability'] && <Reliability d={data['benchmark-reliability']} />}
+      {data['robustness-sweep'] && <Robustness d={data['robustness-sweep']} />}
       {data['semantic-eval'] && <Semantic d={data['semantic-eval']} />}
       {data['explanation-eval'] && <Explanations d={data['explanation-eval']} />}
       {data['crosscam-eval'] && <CrossCam d={data['crosscam-eval']} />}

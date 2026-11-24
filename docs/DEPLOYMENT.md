@@ -4,22 +4,26 @@ Nothing here has been deployed, and no paid service was used or contacted. This 
 
 | Mode | What it is | Runs a model? | Status |
 |---|---|---|---|
-| Read-only demo | A static site: the React app plus a precomputed bundle (video, boxes, events, evidence frames and clips). Suited to Vercel or any static host. | No | Built and checked in a real browser under the production headers. Not deployed. |
-| Live backend | One container image running the API (which also serves the built UI) and one worker. CPU inference. | Yes | Image built and smoke-tested locally (aarch64 Linux). Not deployed. |
+| Read-only demo | A static site: the React app plus a precomputed bundle (video, boxes, events, evidence frames and clips). | No | Built into `web/dist-demo` and checked in Brave with the configured headers. |
+| Live backend | One container image running the API (which also serves the built UI) and one worker. CPU inference. | Yes | End-to-end verified with Docker Compose on aarch64 Linux. |
 
 ## 1. Read-only demo (static)
 
 ```bash
-scripts/build_demo.sh            # exports the latest completed local run, then builds web/dist in demo mode
-python scripts/serve_static.py web/dist     # preview at http://127.0.0.1:4173 with the production headers
+scripts/build_demo.sh --run-id <id>     # choose a completed run appropriate for sharing
+python scripts/serve_static.py web/dist-demo     # preview at http://127.0.0.1:4173
 ```
 `VITE_DEFAULT_MODE=demo` (set by `npm run build:demo`) makes the app open in the visibly labelled "Static demo" mode with no backend. Upload, zones, processing, review, semantic search and descriptions are disabled or explain that they need the live backend.
 
-**Measured:** the bundle exported from the benchmark pedestrian run is 35 MB (34 MB under `demo/`): a 3.4 MB re-encoded video, 7 events with evidence frames, and 7 padded clips that account for most of the size. The largest single file is the video or a clip; the JS is 268 kB (83 kB gzipped). `python -m video_investigator.cli export-demo --skip-clips` leaves out the clips for a smaller bundle. I did not look up Vercel's current file and deployment size limits, so check them before deploying a bundle this size.
+The current bundle is 31 MiB. It contains the CC0 pedestrian benchmark video, seven events with their evidence frames and clips, and the saved evaluation reports. A fresh export stages only the selected run, leaving the live UI build and its local data separate. Pass `--skip-clips` to `scripts/build_demo.sh` for a smaller bundle.
 
-**Headers** (`deploy/vercel/vercel.json`, copied into `web/dist/` by the build script): a strict Content-Security-Policy (`default-src 'self'`, no inline scripts or styles, `frame-ancestors 'none'`), `nosniff`, no referrer, no camera, microphone or location, long caching for hashed assets and one hour for `/demo/`. The static check (`web/e2e/demo.mjs` with `DEFAULT_DEMO=1`) loads the build from a server that applies exactly these headers and requires zero console errors, so a CSP violation would fail it. Range requests (video seeking) were verified to return 206.
+The build copies `deploy/vercel/vercel.json` into `web/dist-demo`. The local preview applies its Content-Security-Policy, caching and other headers. The browser checks passed without console errors and a video byte-range request returned HTTP 206. Before publishing, review the selected footage and exported review notes under `web/dist-demo/demo`. Footage attribution is in [third-party notices](../THIRD-PARTY-NOTICES.md).
 
-**Deploying it later (not done):** `vercel deploy web/dist` after `vercel login`. The bundle contains frames from a CC0 clip showing members of the public; confirm you are comfortable publishing that. The licence notes are in `THIRD-PARTY-NOTICES.md`.
+### Preview on Vercel
+
+1. Build and preview `web/dist-demo` using the commands above. Check the video, evidence and Evaluation page.
+2. With the Vercel CLI installed and signed in, run `vercel deploy web/dist-demo` from the repository root and select the intended project. Use the static output directory as the deployment source. [Vercel CLI documentation](https://vercel.com/docs/cli/deploy)
+3. Open the preview URL printed by Vercel. Check for the **Static demo** badge, play and seek in the video, and open evidence and the Evaluation page. The static build contains saved results, so it doesn't offer uploads or new analysis.
 
 ## 2. Live backend
 
@@ -29,7 +33,9 @@ docker compose up --build                         # API + UI on 127.0.0.1:8000, 
 ```
 Open http://127.0.0.1:8000 and enter the token when asked. The compose file binds to loopback only: put an authenticating reverse proxy (TLS, ideally SSO) or a private network in front before exposing it.
 
-**Validated locally:** `docker build` succeeded (image 2.84 GB, Python 3.11, CPU PyTorch 2.15.0, H.264 encoder present); its health endpoint answers, it returns 401 without the token and 200 with it, serves the built UI, runs as a non-root user (uid 10001), and the detector loaded the same COCO weights (SHA-256 `907ea3f9...`). The compose file validates (`docker compose config`). **Not validated:** an x86-64 build (the daemon here is aarch64), a full upload and processing run inside the container, multi-container volume sharing between API and worker under load, and any cloud provider.
+**Validated locally on November 23, 2026.** The Compose image built on aarch64 Linux. The API served the UI as uid 10001 and required a token for video routes. In Brave, the API accepted an upload and served an H.264 derivative. The worker processed 75 frames with the pretrained COCO weights (SHA-256 `907ea3f9...`) and returned seven candidate events. Evidence, search, review and report export worked. Restarting both services preserved the completed run, its events and the saved review on the shared volume. JSON, HTML and Markdown exports retained the review, and the JSON retained the source and run hashes.
+
+An x86-64 image, concurrent load, and cloud hosting still need verification if used. The current live setup targets one worker and a private, same-origin service.
 
 **Hosting the frontend and backend separately** is not supported yet: the optional access token uses a same-site cookie, so the UI and API must share an origin. The build does accept `VITE_API_BASE` and the API accepts `VI_CORS_ORIGINS`, but cross-site cookie authentication (`SameSite=None; Secure`, credentialed CORS) is not implemented. The supported split is: static demo on Vercel, live service on its own host and URL.
 
